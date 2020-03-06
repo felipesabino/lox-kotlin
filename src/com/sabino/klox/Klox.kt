@@ -1,4 +1,4 @@
-package com.klox
+package com.sabino.klox
 
 import java.io.BufferedReader
 import java.io.IOException

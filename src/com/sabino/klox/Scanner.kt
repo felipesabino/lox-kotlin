@@ -1,6 +1,6 @@
-package com.klox
+package com.sabino.klox
 
-import com.klox.TokenType.*
+import com.sabino.klox.TokenType.*
 
 internal class Scanner(private val source: String) {
     private val tokens: MutableList<Token> = ArrayList()
