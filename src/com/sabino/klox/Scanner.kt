@@ -4,9 +4,9 @@ import com.sabino.klox.TokenType.*
 
 internal class Scanner(private val source: String) {
     private val tokens: MutableList<Token> = ArrayList()
-    private var start = 0;
-    private var current = 0;
-    private var line = 1;
+    private var start = 0
+    private var current = 0
+    private var line = 1
 
     private val keywords: Map<String, TokenType> = mapOf("and" to AND,
                                                         "class" to CLASS,
@@ -39,7 +39,7 @@ internal class Scanner(private val source: String) {
     }
 
     private fun scanToken() {
-        val c = advance();
+        val c = advance()
         when (c) {
             '(' -> addToken(LEFT_PAREN)
             ')' -> addToken(RIGHT_PAREN)
