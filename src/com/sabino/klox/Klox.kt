@@ -9,10 +9,9 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-
 class Klox {
     companion object {
-        var hadError = false
+        private var hadError = false
 
         @JvmStatic fun main(args: Array<String>) {
             when (args.size) {
@@ -54,8 +53,16 @@ class Klox {
             }
         }
 
-        fun error(line: Int, message: String) {
+        internal fun error(line: Int, message: String) {
             report(line, "", message)
+        }
+
+        internal fun error(token: Token, message: String) {
+            if(token.type == TokenType.EOF) {
+                report(token.line, "at end ", message)
+            } else {
+                report(token.line, "at '${token.lexeme}", message)
+            }
         }
 
         private fun report(line: Int, where: String, message: String) {
