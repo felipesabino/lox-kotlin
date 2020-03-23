@@ -45,12 +45,19 @@ class Klox {
         }
 
         private fun run(source: String) {
+            hadError = false
+
             val scanner = Scanner(source)
             val tokens: List<Token> = scanner.scanTokens()
-            // For now, just print the tokens.
-            for (token in tokens) {
-                System.out.println(token)
-            }
+
+            val parser = Parser(tokens)
+            val expr = parser.parse()
+
+            // stop in case of a syntax error
+            if (hadError || expr.isEmpty) { return }
+
+            // For now, just print the AST
+            println(AstPrinter().print(expr.get()))
         }
 
         internal fun error(line: Int, message: String) {
@@ -59,9 +66,9 @@ class Klox {
 
         internal fun error(token: Token, message: String) {
             if(token.type == TokenType.EOF) {
-                report(token.line, "at end ", message)
+                report(token.line, " at end ", message)
             } else {
-                report(token.line, "at '${token.lexeme}", message)
+                report(token.line, " at '${token.lexeme}'", message)
             }
         }
 

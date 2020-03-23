@@ -2,6 +2,7 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
+import java.util.Optional
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -11,6 +12,14 @@ internal class Parser(val tokens: List<Token>) {
         constructor(message: String, ex: Exception?): super(message, ex)
         constructor(message: String): super(message)
         constructor(ex: Exception): super(ex)
+    }
+
+    fun parse(): Optional<Expr> {
+        return try {
+            Optional.of(expression())
+        } catch (e: ParserError) {
+            Optional.empty()
+        }
     }
 
     /*
