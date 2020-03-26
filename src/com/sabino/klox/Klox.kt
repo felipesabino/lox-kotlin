@@ -1,5 +1,6 @@
 package com.sabino.klox
 
+import com.sabino.klox.Interpreter.RuntimeError
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -7,11 +8,16 @@ import java.lang.System.exit
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.math.exp
 import kotlin.system.exitProcess
+
 
 class Klox {
     companion object {
         private var hadError = false
+        private var hadRuntimeError = false
+
+        private val interpreter = Interpreter()
 
         @JvmStatic fun main(args: Array<String>) {
             when (args.size) {
@@ -31,6 +37,7 @@ class Klox {
 
             // Indicate an error in the exit code.
             if (hadError) exit(65)
+            if (hadRuntimeError) exit(70)
         }
 
         @Throws(IOException::class)
@@ -46,6 +53,7 @@ class Klox {
 
         private fun run(source: String) {
             hadError = false
+            hadRuntimeError = false
 
             val scanner = Scanner(source)
             val tokens: List<Token> = scanner.scanTokens()
@@ -56,8 +64,7 @@ class Klox {
             // stop in case of a syntax error
             if (hadError || expr.isEmpty) { return }
 
-            // For now, just print the AST
-            println(AstPrinter().print(expr.get()))
+            interpreter.interpret(expr.get());
         }
 
         internal fun error(line: Int, message: String) {
@@ -70,6 +77,14 @@ class Klox {
             } else {
                 report(token.line, " at '${token.lexeme}'", message)
             }
+        }
+
+        internal fun runtimeError(error: RuntimeError) {
+            System.err.println(
+                error.message +
+                        "\n[line " + error.token.line + "]"
+            )
+            hadRuntimeError = true
         }
 
         private fun report(line: Int, where: String, message: String) {

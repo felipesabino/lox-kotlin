@@ -1,9 +1,21 @@
 package com.sabino.klox
 
-import java.lang.StringBuilder
-import java.util.Optional
+import java.util.*
+
 
 internal class Interpreter : Expr.Visitor<Optional<Any>> {
+
+    class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
+
+
+    fun interpret(expression: Expr) {
+        try {
+            val value: Optional<Any> = evaluate(expression)
+            println(stringify(value))
+        } catch (error: RuntimeError) {
+            Klox.runtimeError(error)
+        }
+    }
 
     override fun visitBinaryExpr(expr: Expr.Binary): Optional<Any> {
         val left = evaluate(expr.left)
@@ -11,9 +23,37 @@ internal class Interpreter : Expr.Visitor<Optional<Any>> {
 
         return Optional.ofNullable(
             when (expr.operator.type) {
-                TokenType.MINUS -> left.get() - right.get() //what if it is not a number or any value is null?
-                TokenType.SLASH -> left.get() / right.get()
-                TokenType.STAR -> left.get() * right.get()
+                TokenType.GREATER -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) > (right.get() as Double)
+                }
+                TokenType.GREATER_EQUAL -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) >= (right.get() as Double)
+                }
+                TokenType.LESS -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) < (right.get() as Double)
+                }
+                TokenType.LESS_EQUAL -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) <= (right.get() as Double)
+                }
+                TokenType.MINUS -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) - (right.get() as Double)
+                }
+                TokenType.SLASH -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    if ((right.get() as Double) == 0.0) { //how does kotlin handle double comparison?
+                        throw RuntimeError(expr.operator, "Can not divide by zero")
+                    }
+                    (left.get() as Double) / (right.get() as Double)
+                }
+                TokenType.STAR -> {
+                    checkNumberOperands(expr.operator, left, right)
+                    (left.get() as Double) * (right.get() as Double)
+                }
                 TokenType.PLUS -> {
                     if (left.filter { v -> v is Double}.isPresent && right.filter { v -> v is Double}.isPresent) {
                         left.map { v -> v as Double }.get() + right.map { v -> v as Double }.get()
@@ -23,9 +63,11 @@ internal class Interpreter : Expr.Visitor<Optional<Any>> {
                             .append(right.map { v -> v as String }.get())
                             .toString()
                     } else {
-                        null
+                        throw RuntimeError(expr.operator, "Operand must be a both Strings or Numbers.")
                     }
                 }
+                TokenType.BANG_EQUAL -> isEqual(left, right).not()
+                TokenType.EQUAL_EQUAL -> isEqual(left, right)
                 else -> null
             }
         )
@@ -57,5 +99,31 @@ internal class Interpreter : Expr.Visitor<Optional<Any>> {
         if (value.isPresent.not()) { return false }
         if (value.get() is Boolean) { return value.get() as Boolean }
         return true
+    }
+
+    private fun isEqual(left: Optional<Any>, right: Optional<Any>): Boolean {
+        if (left.isPresent.not() && right.isPresent.not()) { return true }
+        if (left.isPresent.not()) { return false }
+        return left == right
+    }
+
+    private fun checkNumberOperands(token: Token, vararg operands: Optional<Any>) {
+        val anyCheckFailed = operands.any { op -> op.isPresent.not() || (op.get() is Double).not() }
+        if (anyCheckFailed) {
+            throw RuntimeError(token, "Operands must be a Number.")
+        }
+    }
+
+    private fun stringify(value: Optional<Any>): String {
+        if (value.isPresent.not() || value.get() == null) return "nil"
+        // Hack. Work around Java adding ".0" to integer-valued doubles.
+        if (value.get() is Double) {
+            var text = value.get().toString()
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length - 2)
+            }
+            return text
+        }
+        return value.get().toString()
     }
 }
