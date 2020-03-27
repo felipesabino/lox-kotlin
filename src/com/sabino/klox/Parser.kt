@@ -2,8 +2,6 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
-import java.util.Optional
-
 
 internal class Parser(val tokens: List<Token>) {
 
@@ -14,15 +12,20 @@ internal class Parser(val tokens: List<Token>) {
         constructor(ex: Exception): super(ex)
     }
 
-    fun parse(): Optional<Expr> {
-        return try {
-            Optional.of(expression())
-        } catch (e: ParserError) {
-            Optional.empty()
-        }
+    // program   → statement* EOF ;
+    fun parse() = sequence {
+        while (!isAtEnd()) yield(statement())
     }
 
     /*
+
+        program   → statement* EOF ;
+
+        statement → exprStmt | printStmt ;
+
+        exprStmt  → expression ";" ;
+        printStmt → "print" expression ";" ;
+
         expression     → equality ;
         equality       → comparison ( ( "!=" | "==" ) comparison )* ;
         comparison     → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
@@ -43,6 +46,29 @@ internal class Parser(val tokens: List<Token>) {
      */
 
     private var current = 0
+
+    // statement → exprStmt | printStmt ;
+    private fun statement(): Stmt {
+        return if (match(TokenType.PRINT)) {
+            printStatement()
+        } else {
+            expressionStatement()
+        }
+    }
+
+    // printStmt → "print" expression ";" ;
+    private fun printStatement(): Stmt {
+        val value = expression()
+        consume(SEMICOLON, "Expect ';' after value")
+        return Stmt.Print(value)
+    }
+
+    // exprStmt  → expression ";" ;
+    private fun expressionStatement(): Stmt {
+        val expr = expression()
+        consume(SEMICOLON, "Expect ';' after value")
+        return Stmt.Expression(expr)
+    }
 
     // expression     → equality ;
     private fun expression(): Expr {
@@ -125,12 +151,29 @@ internal class Parser(val tokens: List<Token>) {
         throw error(peek(), "Expected expression")
     }
 
+    /**
+     * Verifies if next token matches a type,
+     * throws if not
+     * {@see advance} if it does
+     *
+     * @param type: token type to match
+     * @param message: error message added to exception raised when it does not match
+     * @return Token after matching
+     *
+     */
     private fun consume(type: TokenType, message: String): Token {
         if(check(type)) return advance()
 
         throw error(peek(), message)
     }
 
+    /**
+     * Verifies if next token matches a set of types
+     * If true, it also {@see advance}
+     *
+     * @param types: types of token to match\
+     * @return Returns result of matching
+     */
     private fun match(vararg types: TokenType): Boolean {
         for (type in types) {
             if (check(type)) {

@@ -59,12 +59,12 @@ class Klox {
             val tokens: List<Token> = scanner.scanTokens()
 
             val parser = Parser(tokens)
-            val expr = parser.parse()
+            val statements = parser.parse()
 
             // stop in case of a syntax error
-            if (hadError || expr.isEmpty) { return }
+            if (hadError ) { return }
 
-            interpreter.interpret(expr.get());
+            interpreter.interpret(statements);
         }
 
         internal fun error(line: Int, message: String) {

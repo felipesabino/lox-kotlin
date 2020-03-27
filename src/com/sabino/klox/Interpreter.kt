@@ -3,15 +3,14 @@ package com.sabino.klox
 import java.util.*
 
 
-internal class Interpreter : Expr.Visitor<Optional<Any>> {
+internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
 
 
-    fun interpret(expression: Expr) {
+    fun interpret(statements: Sequence<Stmt>) {
         try {
-            val value: Optional<Any> = evaluate(expression)
-            println(stringify(value))
+            statements.forEach { execute(it) }
         } catch (error: RuntimeError) {
             Klox.runtimeError(error)
         }
@@ -125,5 +124,18 @@ internal class Interpreter : Expr.Visitor<Optional<Any>> {
             return text
         }
         return value.get().toString()
+    }
+
+    private fun execute(stmt: Stmt) {
+        stmt.accept(this)
+    }
+
+    override fun visitExpressionStmt(stmt: Stmt.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrintStmt(stmt: Stmt.Print) {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
     }
 }

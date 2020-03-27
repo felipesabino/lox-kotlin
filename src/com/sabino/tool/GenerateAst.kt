@@ -21,6 +21,12 @@ class GenerateAst {
                 "Literal  : Any? value",
                 "Unary    : Token operator, Expr right"
             ))
+
+
+            defineAst(outputDir, "Stmt", listOf(
+                "Expression : Expr expression",
+                "Print      : Expr expression"
+            ));
         }
 
         @Throws(IOException::class)
@@ -66,7 +72,7 @@ class GenerateAst {
         ) {
             writer.println("  interface Visitor<R> {")
             types
-                .map { "    fun visit${it}Expr(expr: ${it}): R" }
+                .map { "    fun visit${it}${baseName}(expr: ${it}): R" }
                 .forEach(writer::println)
 
             writer.println("  }")
@@ -83,8 +89,8 @@ class GenerateAst {
 
             writer.println("""
     internal class ${className}(${fields}) : ${baseName}() {
-        override fun <R> accept(visitor: Expr.Visitor<R>): R {
-            return visitor.visit${className}Expr(this)
+        override fun <R> accept(visitor: ${baseName}.Visitor<R>): R {
+            return visitor.visit${className}${baseName}(this)
         }
     }""")
 
