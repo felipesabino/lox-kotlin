@@ -2,6 +2,7 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
+import java.util.*
 
 internal class Parser(val tokens: List<Token>) {
 
@@ -12,29 +13,40 @@ internal class Parser(val tokens: List<Token>) {
         constructor(ex: Exception): super(ex)
     }
 
-    // program   → statement* EOF ;
+    // program         → declaration* EOF ;
     fun parse() = sequence {
-        while (!isAtEnd()) yield(statement())
+        while (!isAtEnd()) {
+            val stmt = declaration()
+            if (stmt.isPresent) yield(stmt.get())
+        }
     }
 
     /*
 
-        program   → statement* EOF ;
+        program         → declaration* EOF ;
 
-        statement → exprStmt | printStmt ;
+        declaration     → varDecl
+                        | statement ;
 
-        exprStmt  → expression ";" ;
-        printStmt → "print" expression ";" ;
+        varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-        expression     → equality ;
-        equality       → comparison ( ( "!=" | "==" ) comparison )* ;
-        comparison     → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
-        addition       → multiplication ( ( "-" | "+" ) multiplication )* ;
-        multiplication → unary ( ( "/" | "*" ) unary )* ;
-        unary          → ( "!" | "-" ) unary
-                       | primary ;
-        primary        → NUMBER | STRING | "false" | "true" | "nil"
-                       | "(" expression ")" ;
+        statement       → exprStmt
+                        | printStmt ;
+
+        exprStmt        → expression ";" ;
+        printStmt       → "print" expression ";" ;
+
+        expression      → equality ;
+        equality        → comparison ( ( "!=" | "==" ) comparison )* ;
+        comparison      → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+        addition        → multiplication ( ( "-" | "+" ) multiplication )* ;
+        multiplication  → unary ( ( "/" | "*" ) unary )* ;
+        unary           → ( "!" | "-" ) unary
+                        | primary ;
+        primary         → "false" | "true" | "nil"
+                        | NUMBER | STRING |
+                        | "(" expression ")"
+                        | IDENTIFIER;
     */
 
     /*
@@ -46,6 +58,29 @@ internal class Parser(val tokens: List<Token>) {
      */
 
     private var current = 0
+    // declaration     → varDecl
+    //                 | statement ;
+    private fun declaration(): Optional<Stmt> {
+        return Optional.ofNullable(try {
+            if (match(VAR)) varDeclaration()
+            statement()
+        } catch (e: ParserError) {
+            synchronize()
+            null
+        })
+    }
+
+    private fun varDeclaration(): Stmt {
+        val name = consume(IDENTIFIER, "Expect variable name")
+
+        var initializer: Expr? = null
+        if (match(EQUAL)) {
+            initializer = expression()
+        }
+
+        consume(SEMICOLON, "Expect '; after variable declaration")
+        return Stmt.Var(name, initializer)
+    }
 
     // statement → exprStmt | printStmt ;
     private fun statement(): Stmt {
@@ -132,8 +167,10 @@ internal class Parser(val tokens: List<Token>) {
         return primary()
     }
 
-    // primary        → NUMBER | STRING | "false" | "true" | "nil"
-    // | "(" expression ")" ;
+    // primary         → "false" | "true" | "nil"
+    //                | NUMBER | STRING |
+    //                | "(" expression ")"
+    //                | IDENTIFIER;
     private fun primary(): Expr {
         if (match(FALSE)) return Literal(false)
         if (match(TRUE)) return Literal(true)
@@ -141,6 +178,10 @@ internal class Parser(val tokens: List<Token>) {
 
         if (match(NUMBER, STRING)) {
             return Literal(previous().literal)
+        }
+
+        if (match(IDENTIFIER)) {
+            return Expr.Variable(previous())
         }
 
         if (match(LEFT_PAREN)) {

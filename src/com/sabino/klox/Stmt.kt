@@ -5,6 +5,7 @@ internal abstract class Stmt {
   interface Visitor<R> {
     fun visitExpressionStmt(expr: Expression): R
     fun visitPrintStmt(expr: Print): R
+    fun visitVarStmt(expr: Var): R
   }
 
     internal class Expression(val expression: Expr) : Stmt() {
@@ -16,6 +17,12 @@ internal abstract class Stmt {
     internal class Print(val expression: Expr) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
             return visitor.visitPrintStmt(this)
+        }
+    }
+
+    internal class Var(val name: Token, val initializer: Expr?) : Stmt() {
+        override fun <R> accept(visitor: Stmt.Visitor<R>): R {
+            return visitor.visitVarStmt(this)
         }
     }
 

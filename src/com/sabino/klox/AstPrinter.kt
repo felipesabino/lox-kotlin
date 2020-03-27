@@ -38,4 +38,8 @@ internal class AstPrinter : Expr.Visitor<String> {
         builder.append(")")
         return builder.toString()
     }
+
+    override fun visitVariableExpr(expr: Expr.Variable): String {
+        TODO("Not yet implemented")
+    }
 }
