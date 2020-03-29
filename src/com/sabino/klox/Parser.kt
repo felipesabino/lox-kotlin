@@ -2,7 +2,8 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
-import java.util.Optional
+import com.sun.tools.example.debug.expr.ExpressionParserConstants.ELSE
+import java.util.*
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -34,13 +35,14 @@ internal class Parser(val tokens: List<Token>) {
         varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
         statement       → exprStmt
+                        | ifStmt
                         | printStmt
                         | block ;
 
-        block           → "{" declaration* "}" ;
-
         exprStmt        → expression ";" ;
+        ifStmt          → "if" "(" expression ")" statement ( "else" statement )? ;
         printStmt       → "print" expression ";" ;
+        block           → "{" declaration* "}" ;
 
         expression      → assignment ;
         assignment      → IDENTIFIER "=" assignment
@@ -91,9 +93,10 @@ internal class Parser(val tokens: List<Token>) {
         return Stmt.Var(name, initializer)
     }
 
-    // statement → exprStmt | printStmt | block ;
+    // statement → exprStmt | ifStatement | printStmt | block ;
     private fun statement(): Stmt {
-        return if (match(PRINT)) { printStatement() }
+        return if (match(IF)) return ifStatement()
+        else if (match(PRINT)) { printStatement() }
         else if (match(LEFT_BRACE)) { Stmt.Block(block()) }
         else { expressionStatement() }
     }
@@ -121,6 +124,19 @@ internal class Parser(val tokens: List<Token>) {
         }
         consume(RIGHT_BRACE, "Expect '}' after block.")
         return statements
+    }
+
+    // ifStmt   → "if" "(" expression ")" statement ( "else" statement )? ;
+    private open fun ifStatement(): Stmt? {
+        consume(LEFT_PAREN, "Expect '(' after 'if'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after if condition.")
+        val thenBranch = statement()
+        var elseBranch: Stmt? = null
+        if (match(TokenType.ELSE)) {
+            elseBranch = statement()
+        }
+        return Stmt.If(condition, thenBranch, elseBranch!!)
     }
 
     // expression     → assignment ;

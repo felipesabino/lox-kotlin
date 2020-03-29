@@ -5,6 +5,7 @@ internal abstract class Stmt {
   interface Visitor<R> {
     fun visitBlockStmt(expr: Block): R
     fun visitExpressionStmt(expr: Expression): R
+    fun visitIfStmt(expr: If): R
     fun visitPrintStmt(expr: Print): R
     fun visitVarStmt(expr: Var): R
   }
@@ -18,6 +19,12 @@ internal abstract class Stmt {
     internal class Expression(val expression: Expr) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
             return visitor.visitExpressionStmt(this)
+        }
+    }
+
+    internal class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt) : Stmt() {
+        override fun <R> accept(visitor: Stmt.Visitor<R>): R {
+            return visitor.visitIfStmt(this)
         }
     }
 
