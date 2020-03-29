@@ -1,8 +1,6 @@
 package com.sabino.klox
 
 import java.util.*
-import kotlin.math.exp
-
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
@@ -114,6 +112,13 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
 
         environment.define(stmt.name.lexeme, value)
+    }
+
+    override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
+        val value: Optional<Any> = evaluate(expr.value)
+
+        environment.assign(expr.name, value)
+        return value
     }
 
     private fun evaluate(expr: Expr): Optional<Any> {

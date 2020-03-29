@@ -3,12 +3,19 @@ package com.sabino.klox;
 internal abstract class Expr {
 
   interface Visitor<R> {
+    fun visitAssignExpr(expr: Assign): R
     fun visitBinaryExpr(expr: Binary): R
     fun visitGroupingExpr(expr: Grouping): R
     fun visitLiteralExpr(expr: Literal): R
     fun visitUnaryExpr(expr: Unary): R
     fun visitVariableExpr(expr: Variable): R
   }
+
+    internal class Assign(val name: Token, val value: Expr) : Expr() {
+        override fun <R> accept(visitor: Expr.Visitor<R>): R {
+            return visitor.visitAssignExpr(this)
+        }
+    }
 
     internal class Binary(val left: Expr, val operator: Token, val right: Expr) : Expr() {
         override fun <R> accept(visitor: Expr.Visitor<R>): R {

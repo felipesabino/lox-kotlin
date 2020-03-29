@@ -1,8 +1,10 @@
 package com.sabino.klox
 
+import com.sabino.klox.Expr.Assign
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
 import java.util.*
+
 
 internal class Parser(val tokens: List<Token>) {
 
@@ -38,7 +40,10 @@ internal class Parser(val tokens: List<Token>) {
         exprStmt        → expression ";" ;
         printStmt       → "print" expression ";" ;
 
-        expression      → equality ;
+        expression      → assignment ;
+        assignment      → IDENTIFIER "=" assignment
+                        | equality ;
+
         equality        → comparison ( ( "!=" | "==" ) comparison )* ;
         comparison      → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
         addition        → multiplication ( ( "-" | "+" ) multiplication )* ;
@@ -107,9 +112,23 @@ internal class Parser(val tokens: List<Token>) {
         return Stmt.Expression(expr)
     }
 
-    // expression     → equality ;
+    // expression     → assignment ;
     private fun expression(): Expr {
-        return equality()
+        return assignment()
+    }
+
+    private fun assignment(): Expr {
+        val expr = equality()
+        if (match(EQUAL)) {
+            val equals = previous()
+            val value = assignment()
+            if (expr is Expr.Variable) {
+                val name = expr.name
+                return Expr.Assign(name, value)
+            }
+            error(equals, "Invalid assignment target.")
+        }
+        return expr
     }
 
     // equality       → comparison ( ( "!=" | "==" ) comparison )* ;

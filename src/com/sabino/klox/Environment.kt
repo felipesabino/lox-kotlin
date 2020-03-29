@@ -1,6 +1,8 @@
 package com.sabino.klox
 
-import java.util.Optional
+import com.sabino.klox.Interpreter.RuntimeError
+import java.util.*
+
 
 internal class Environment {
     private val values = mutableMapOf<String, Optional<Any>>()
@@ -11,7 +13,16 @@ internal class Environment {
 
     fun get(token: Token) : Optional<Any> {
         return values.getOrElse(token.lexeme, {
-            throw Interpreter.RuntimeError(token, "Undefined variable '${token.lexeme}'")
+            throw Interpreter.RuntimeError(token, "Undefined variable '${token.lexeme}'.")
         })
+    }
+
+    fun assign(name: Token, value: Optional<Any>) {
+
+        if (values.containsKey(name.lexeme)) {
+            values[name.lexeme] = value
+        } else {
+            throw RuntimeError(name, "Undefined variable '${name.lexeme}'.")
+        }
     }
 }
