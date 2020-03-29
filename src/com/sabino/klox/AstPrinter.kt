@@ -1,6 +1,7 @@
 package com.sabino.klox
 
 import com.sabino.klox.Expr
+import kotlin.math.exp
 
 internal class AstPrinter : Expr.Visitor<String> {
 
@@ -40,6 +41,6 @@ internal class AstPrinter : Expr.Visitor<String> {
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): String {
-        TODO("Not yet implemented")
+        return "(var ${expr.name.lexeme} ${expr.name.literal})"
     }
 }

@@ -19,7 +19,9 @@ internal class Parser(val tokens: List<Token>) {
             val stmt = declaration()
             if (stmt.isPresent) yield(stmt.get())
         }
-    }
+    }.asIterable()
+
+
 
     /*
 
@@ -63,7 +65,7 @@ internal class Parser(val tokens: List<Token>) {
     private fun declaration(): Optional<Stmt> {
         return Optional.ofNullable(try {
             if (match(VAR)) varDeclaration()
-            statement()
+            else statement()
         } catch (e: ParserError) {
             synchronize()
             null

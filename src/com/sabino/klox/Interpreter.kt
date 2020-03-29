@@ -1,14 +1,16 @@
 package com.sabino.klox
 
 import java.util.*
+import kotlin.math.exp
 
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
 
+    private val environment = Environment()
 
-    fun interpret(statements: Sequence<Stmt>) {
+    fun interpret(statements: Iterable<Stmt>) {
         try {
             statements.forEach { execute(it) }
         } catch (error: RuntimeError) {
@@ -90,8 +92,32 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
     }
 
+    override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
+        return environment.get(expr.name)
+    }
+
+
+    override fun visitExpressionStmt(stmt: Stmt.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrintStmt(stmt: Stmt.Print) {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
+    }
+
+    override fun visitVarStmt(stmt: Stmt.Var) {
+
+        var value: Optional<Any> = Optional.empty()
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer)
+        }
+
+        environment.define(stmt.name.lexeme, value)
+    }
+
     private fun evaluate(expr: Expr): Optional<Any> {
-        return expr.accept(this);
+        return expr.accept(this)
     }
 
     private fun isTruthy(value: Optional<Any>): Boolean {
@@ -130,12 +156,4 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         stmt.accept(this)
     }
 
-    override fun visitExpressionStmt(stmt: Stmt.Expression) {
-        evaluate(stmt.expression)
-    }
-
-    override fun visitPrintStmt(stmt: Stmt.Print) {
-        val value = evaluate(stmt.expression)
-        println(stringify(value))
-    }
 }
