@@ -1,9 +1,8 @@
 package com.sabino.klox
 
-import com.sabino.klox.Expr.Assign
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
-import java.util.*
+import java.util.Optional
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -17,7 +16,7 @@ internal class Parser(val tokens: List<Token>) {
 
     // program         → declaration* EOF ;
     fun parse() = sequence {
-        while (!isAtEnd()) {
+        while (isAtEnd().not()) {
             val stmt = declaration()
             if (stmt.isPresent) yield(stmt.get())
         }
@@ -35,7 +34,10 @@ internal class Parser(val tokens: List<Token>) {
         varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
         statement       → exprStmt
-                        | printStmt ;
+                        | printStmt
+                        | block ;
+
+        block           → "{" declaration* "}" ;
 
         exprStmt        → expression ";" ;
         printStmt       → "print" expression ";" ;
@@ -89,13 +91,11 @@ internal class Parser(val tokens: List<Token>) {
         return Stmt.Var(name, initializer)
     }
 
-    // statement → exprStmt | printStmt ;
+    // statement → exprStmt | printStmt | block ;
     private fun statement(): Stmt {
-        return if (match(TokenType.PRINT)) {
-            printStatement()
-        } else {
-            expressionStatement()
-        }
+        return if (match(PRINT)) { printStatement() }
+        else if (match(LEFT_BRACE)) { Stmt.Block(block()) }
+        else { expressionStatement() }
     }
 
     // printStmt → "print" expression ";" ;
@@ -110,6 +110,17 @@ internal class Parser(val tokens: List<Token>) {
         val expr = expression()
         consume(SEMICOLON, "Expect ';' after value")
         return Stmt.Expression(expr)
+    }
+
+    // block  → "{" declaration* "}" ;
+    private fun block(): Iterable<Stmt> {
+        var statements = mutableListOf<Stmt>()
+        while (check(RIGHT_BRACE).not() && isAtEnd().not()) {
+            val stmt = declaration()
+            if (stmt.isPresent) statements.add(stmt.get())
+        }
+        consume(RIGHT_BRACE, "Expect '}' after block.")
+        return statements
     }
 
     // expression     → assignment ;

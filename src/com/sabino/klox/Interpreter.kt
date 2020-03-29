@@ -6,7 +6,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
 
-    private val environment = Environment()
+    private var environment = Environment()
 
     fun interpret(statements: Iterable<Stmt>) {
         try {
@@ -94,6 +94,12 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         return environment.get(expr.name)
     }
 
+    override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
+        val value: Optional<Any> = evaluate(expr.value)
+
+        environment.assign(expr.name, value)
+        return value
+    }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
@@ -114,11 +120,8 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         environment.define(stmt.name.lexeme, value)
     }
 
-    override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
-        val value: Optional<Any> = evaluate(expr.value)
-
-        environment.assign(expr.name, value)
-        return value
+    override fun visitBlockStmt(stmt: Stmt.Block) {
+        executeBlock(stmt.statements, Environment(environment));
     }
 
     private fun evaluate(expr: Expr): Optional<Any> {
@@ -159,6 +162,18 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     private fun execute(stmt: Stmt) {
         stmt.accept(this)
+    }
+
+    fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
+        val previous = this.environment
+        try {
+            this.environment = environment
+            for (statement in statements) {
+                execute(statement!!)
+            }
+        } finally {
+            this.environment = previous
+        }
     }
 
 }

@@ -18,12 +18,12 @@ internal class Environment {
     fun get(token: Token): Optional<Any> {
 
         if (values.containsKey(token.lexeme)) {
-            return values.getOrElse(token.lexeme, { throw undefinedValiableError(token) })
+            return values.getOrElse(token.lexeme, { fail(token) })
         }
 
         if (enclosing.isPresent) { return enclosing.get().get(token) }
 
-        throw undefinedValiableError(token)
+        fail(token)
     }
 
     fun assign(token: Token, value: Optional<Any>) {
@@ -33,12 +33,12 @@ internal class Environment {
         } else if (enclosing.isPresent) {
             enclosing.get().assign(token, value)
         } else {
-            throw undefinedValiableError(token)
+            fail(token)
         }
     }
 
     @Throws
-    private fun undefinedValiableError(name: Token): RuntimeError {
-        return RuntimeError(name, "Undefined variable '${name.lexeme}'.")
+    private fun fail(name: Token): Nothing {
+        throw RuntimeError(name, "Undefined variable '${name.lexeme}'.")
     }
 }

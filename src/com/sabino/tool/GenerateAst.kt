@@ -26,6 +26,7 @@ class GenerateAst {
 
 
             defineAst(outputDir, "Stmt", listOf(
+                "Block      : Iterable<Stmt> statements",
                 "Expression : Expr expression",
                 "Print      : Expr expression",
                 "Var        : Token name, Expr? initializer"

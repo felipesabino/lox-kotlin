@@ -3,10 +3,17 @@ package com.sabino.klox;
 internal abstract class Stmt {
 
   interface Visitor<R> {
+    fun visitBlockStmt(expr: Block): R
     fun visitExpressionStmt(expr: Expression): R
     fun visitPrintStmt(expr: Print): R
     fun visitVarStmt(expr: Var): R
   }
+
+    internal class Block(val statements: Iterable<Stmt>) : Stmt() {
+        override fun <R> accept(visitor: Stmt.Visitor<R>): R {
+            return visitor.visitBlockStmt(this)
+        }
+    }
 
     internal class Expression(val expression: Expr) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
