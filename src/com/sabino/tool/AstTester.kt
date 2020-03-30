@@ -5,6 +5,7 @@ import com.sabino.klox.Expr
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.Token
 import com.sabino.klox.TokenType
+import java.util.*
 
 
 class AstTester {
@@ -15,12 +16,12 @@ class AstTester {
         fun main(args: Array<String>) {
             val expression: Expr = Expr.Binary(
                 Expr.Unary(
-                    Token(TokenType.MINUS, "-", null, 1),
-                    Literal(123)
+                    Token(TokenType.MINUS, "-", Optional.empty(), 1),
+                    Literal(Optional.of(123))
                 ),
-                Token(TokenType.STAR, "*", null, 1),
+                Token(TokenType.STAR, "*", Optional.empty(), 1),
                 Expr.Grouping(
-                    Literal(45.67)
+                    Literal(Optional.of(45.67))
                 )
             )
 

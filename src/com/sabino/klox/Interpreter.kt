@@ -77,7 +77,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitLiteralExpr(expr: Expr.Literal): Optional<Any> {
-        return Optional.ofNullable(expr.value)
+        return expr.value
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
@@ -122,6 +122,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     override fun visitBlockStmt(stmt: Stmt.Block) {
         executeBlock(stmt.statements, Environment(environment));
+    }
+
+    override fun visitIfStmt(expr: Stmt.If) {
+        TODO("Not yet implemented")
     }
 
     private fun evaluate(expr: Expr): Optional<Any> {

@@ -1,6 +1,8 @@
 package com.sabino.klox
 
 import com.sabino.klox.TokenType.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 internal class Scanner(private val source: String) {
     private val tokens: MutableList<Token> = ArrayList()
@@ -30,7 +32,7 @@ internal class Scanner(private val source: String) {
             start = current
             scanToken()
         }
-        tokens.add(Token(EOF, "", null, line))
+        tokens.add(Token(EOF, "", Optional.empty(), line))
         return tokens
     }
 
@@ -73,10 +75,10 @@ internal class Scanner(private val source: String) {
     }
 
     private fun addToken(type: TokenType) {
-        addToken(type, null)
+        addToken(type, Optional.empty())
     }
 
-    private fun addToken(type: TokenType, literal: Any?) {
+    private fun addToken(type: TokenType, literal: Optional<Any>) {
         val text = source.substring(start, current)
         tokens.add(Token(type, text, literal, line))
     }
@@ -119,7 +121,7 @@ internal class Scanner(private val source: String) {
         advance()
         // Trim the surrounding quotes.
         val value = source.substring(start + 1, current - 1)
-        addToken(STRING, value)
+        addToken(STRING, Optional.of(value))
     }
 
     private fun isDigit(c: Char): Boolean {
@@ -142,7 +144,7 @@ internal class Scanner(private val source: String) {
             advance()
             while (isDigit(peek())) advance()
         }
-        addToken(NUMBER, source.substring(start, current).toDouble())
+        addToken(NUMBER, Optional.of(source.substring(start, current).toDouble()))
     }
 
     private fun identifier() {

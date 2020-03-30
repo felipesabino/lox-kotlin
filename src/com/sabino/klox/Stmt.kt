@@ -1,4 +1,6 @@
-package com.sabino.klox;
+package com.sabino.klox
+
+import java.util.Optional
 
 internal abstract class Stmt {
 
@@ -22,7 +24,7 @@ internal abstract class Stmt {
         }
     }
 
-    internal class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt) : Stmt() {
+    internal class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Optional<Stmt>) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
             return visitor.visitIfStmt(this)
         }

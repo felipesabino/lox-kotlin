@@ -2,8 +2,7 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
-import com.sun.tools.example.debug.expr.ExpressionParserConstants.ELSE
-import java.util.*
+import java.util.Optional
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -127,16 +126,16 @@ internal class Parser(val tokens: List<Token>) {
     }
 
     // ifStmt   → "if" "(" expression ")" statement ( "else" statement )? ;
-    private open fun ifStatement(): Stmt? {
+    private fun ifStatement(): Stmt {
         consume(LEFT_PAREN, "Expect '(' after 'if'.")
         val condition = expression()
         consume(RIGHT_PAREN, "Expect ')' after if condition.")
         val thenBranch = statement()
-        var elseBranch: Stmt? = null
+        var elseBranch: Optional<Stmt> = Optional.empty()
         if (match(TokenType.ELSE)) {
-            elseBranch = statement()
+            elseBranch = Optional.of(statement())
         }
-        return Stmt.If(condition, thenBranch, elseBranch!!)
+        return Stmt.If(condition, thenBranch, elseBranch)
     }
 
     // expression     → assignment ;
@@ -220,9 +219,9 @@ internal class Parser(val tokens: List<Token>) {
     //                | "(" expression ")"
     //                | IDENTIFIER;
     private fun primary(): Expr {
-        if (match(FALSE)) return Literal(false)
-        if (match(TRUE)) return Literal(true)
-        if (match(NIL)) return Literal(null)
+        if (match(FALSE)) return Literal(Optional.of(false))
+        if (match(TRUE)) return Literal(Optional.of(true))
+        if (match(NIL)) return Literal(Optional.empty())
 
         if (match(NUMBER, STRING)) {
             return Literal(previous().literal)

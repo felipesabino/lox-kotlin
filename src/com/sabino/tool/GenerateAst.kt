@@ -19,7 +19,7 @@ class GenerateAst {
                 "Assign   : Token name, Expr value",
                 "Binary   : Expr left, Token operator, Expr right",
                 "Grouping : Expr expression",
-                "Literal  : Any? value",
+                "Literal  : Optional<Any> value",
                 "Unary    : Token operator, Expr right",
                 "Variable : Token name"
             ))
@@ -28,7 +28,7 @@ class GenerateAst {
             defineAst(outputDir, "Stmt", listOf(
                 "Block      : Iterable<Stmt> statements",
                 "Expression : Expr expression",
-                "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
+                "If         : Expr condition, Stmt thenBranch, Optional<Stmt> elseBranch",
                 "Print      : Expr expression",
                 "Var        : Token name, Expr? initializer"
             ));
@@ -49,7 +49,9 @@ class GenerateAst {
 
             val path = "$outputDir/$baseName.kt"
             val writer = PrintWriter(path, "UTF-8")
-            writer.println("package com.sabino.klox;")
+            writer.println("package com.sabino.klox")
+            writer.println()
+            writer.println("import java.util.Optional")
             writer.println()
             writer.println("internal abstract class $baseName {")
             writer.println();

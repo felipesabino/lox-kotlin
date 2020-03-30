@@ -1,4 +1,6 @@
-package com.sabino.klox;
+package com.sabino.klox
+
+import java.util.Optional
 
 internal abstract class Expr {
 
@@ -29,7 +31,7 @@ internal abstract class Expr {
         }
     }
 
-    internal class Literal(val value: Any?) : Expr() {
+    internal class Literal(val value: Optional<Any>) : Expr() {
         override fun <R> accept(visitor: Expr.Visitor<R>): R {
             return visitor.visitLiteralExpr(this)
         }

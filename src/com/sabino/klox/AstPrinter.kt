@@ -18,7 +18,7 @@ internal class AstPrinter : Expr.Visitor<String> {
     }
 
     override fun visitLiteralExpr(expr: Expr.Literal): String {
-        return expr.value.toString()
+        return expr.value.map { it.toString() }.orElse("nil")
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): String {
