@@ -35,12 +35,16 @@ internal class Parser(val tokens: List<Token>) {
         varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
         statement       → exprStmt
+                        | forStmt
                         | ifStmt
                         | printStmt
                         | whileStmt
                         | block ;
 
         exprStmt        → expression ";" ;
+        forStmt         → "for" "(" ( varDecl | exprStmt | ";" )
+                        expression? ";"
+                        expression? ")" statement ;
         ifStmt          → "if" "(" expression ")" statement ( "else" statement )? ;
         printStmt       → "print" expression ";" ;
         whileStmt       → "while" "(" expression ")" statement ;
@@ -100,11 +104,75 @@ internal class Parser(val tokens: List<Token>) {
 
     // statement → exprStmt | ifStatement | printStmt | block ;
     private fun statement(): Stmt {
-        return if (match(IF)) return ifStatement()
+        return if (match(FOR)) { forStatement() }
+        else if (match(IF)) { ifStatement() }
         else if (match(PRINT)) { printStatement() }
         else if (match(WHILE)) { whileStatement() }
         else if (match(LEFT_BRACE)) { Stmt.Block(block()) }
         else { expressionStatement() }
+    }
+
+    // forStmt   → "for" "(" ( varDecl | exprStmt | ";" )
+    //           expression? ";"
+    //           expression? ")" statement ;
+    private fun forStatement(): Stmt {
+        /*
+
+        {
+          initializer
+          while (condition) {
+            body
+            increment
+          }
+        }
+
+         */
+
+
+        consume(LEFT_PAREN, "Expect '(' after 'for'.")
+
+        var initializer: Optional<Stmt>
+        if (match(SEMICOLON)) {
+            initializer = Optional.empty()
+        } else if (match(VAR)) {
+            initializer = Optional.of(varDeclaration())
+        } else {
+            initializer = Optional.of(expressionStatement())
+        }
+
+        var condition: Optional<Expr> = Optional.empty()
+        if (!check(SEMICOLON)) {
+            condition = Optional.of(expression())
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.")
+
+        var increment: Optional<Expr> = Optional.empty()
+        if (!check(RIGHT_PAREN)) {
+            increment = Optional.of(expression())
+        }
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        var body = statement()
+
+        if (increment.isPresent) {
+            body = Stmt.Block(listOf(
+                body,
+                Stmt.Expression(increment.get())
+            ))
+        }
+
+        if (condition.isPresent.not()) { condition = Optional.of(Literal(Optional.of(true))) }
+        body = Stmt.While(condition.get(), body)
+
+        if (initializer.isPresent) {
+            body = Stmt.Block(listOf(
+                initializer.get(),
+                body
+            ))
+        }
+
+        return body
+
     }
 
     // printStmt → "print" expression ";" ;
