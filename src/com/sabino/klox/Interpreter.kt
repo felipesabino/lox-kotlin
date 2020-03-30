@@ -125,7 +125,11 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitIfStmt(expr: Stmt.If) {
-        TODO("Not yet implemented")
+        if (isTruthy(evaluate(expr.condition))) {
+            execute(expr.thenBranch)
+        } else if (expr.elseBranch.isPresent){
+            execute(expr.elseBranch.get())
+        }
     }
 
     private fun evaluate(expr: Expr): Optional<Any> {
