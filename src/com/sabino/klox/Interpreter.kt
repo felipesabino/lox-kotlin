@@ -101,6 +101,18 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         return value
     }
 
+    override fun visitLogicalExpr(expr: Expr.Logical): Optional<Any> {
+        val left = evaluate(expr.left)
+
+        if (expr.operator.type === TokenType.OR) {
+            if (isTruthy(left)) return left
+        } else {
+            if (!isTruthy(left)) return left
+        }
+
+        return evaluate(expr.right)
+    }
+
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
     }

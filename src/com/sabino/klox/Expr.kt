@@ -9,6 +9,7 @@ internal abstract class Expr {
     fun visitBinaryExpr(expr: Binary): R
     fun visitGroupingExpr(expr: Grouping): R
     fun visitLiteralExpr(expr: Literal): R
+    fun visitLogicalExpr(expr: Logical): R
     fun visitUnaryExpr(expr: Unary): R
     fun visitVariableExpr(expr: Variable): R
   }
@@ -34,6 +35,12 @@ internal abstract class Expr {
     internal class Literal(val value: Optional<Any>) : Expr() {
         override fun <R> accept(visitor: Expr.Visitor<R>): R {
             return visitor.visitLiteralExpr(this)
+        }
+    }
+
+    internal class Logical(val left: Expr, val operator: Token, val right: Expr) : Expr() {
+        override fun <R> accept(visitor: Expr.Visitor<R>): R {
+            return visitor.visitLogicalExpr(this)
         }
     }
 
