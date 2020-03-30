@@ -1,8 +1,9 @@
 package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
+import com.sabino.klox.Stmt.While
 import com.sabino.klox.TokenType.*
-import java.util.Optional
+import java.util.*
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -36,11 +37,13 @@ internal class Parser(val tokens: List<Token>) {
         statement       → exprStmt
                         | ifStmt
                         | printStmt
+                        | whileStmt
                         | block ;
 
         exprStmt        → expression ";" ;
         ifStmt          → "if" "(" expression ")" statement ( "else" statement )? ;
         printStmt       → "print" expression ";" ;
+        whileStmt       → "while" "(" expression ")" statement ;
         block           → "{" declaration* "}" ;
 
         expression      → assignment ;
@@ -99,6 +102,7 @@ internal class Parser(val tokens: List<Token>) {
     private fun statement(): Stmt {
         return if (match(IF)) return ifStatement()
         else if (match(PRINT)) { printStatement() }
+        else if (match(WHILE)) { whileStatement() }
         else if (match(LEFT_BRACE)) { Stmt.Block(block()) }
         else { expressionStatement() }
     }
@@ -115,6 +119,16 @@ internal class Parser(val tokens: List<Token>) {
         val expr = expression()
         consume(SEMICOLON, "Expect ';' after value")
         return Stmt.Expression(expr)
+    }
+
+    // whileStmt → "while" "(" expression ")" statement ;
+    private fun whileStatement(): Stmt {
+        consume(LEFT_PAREN, "Expect '(' after 'while'.")
+        val condition = expression()
+        consume(RIGHT_PAREN, "Expect ')' after condition.")
+        val body = statement()
+
+        return Stmt.While(condition, body)
     }
 
     // block  → "{" declaration* "}" ;

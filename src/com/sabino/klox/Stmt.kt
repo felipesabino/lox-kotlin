@@ -10,6 +10,7 @@ internal abstract class Stmt {
     fun visitIfStmt(expr: If): R
     fun visitPrintStmt(expr: Print): R
     fun visitVarStmt(expr: Var): R
+    fun visitWhileStmt(expr: While): R
   }
 
     internal class Block(val statements: Iterable<Stmt>) : Stmt() {
@@ -39,6 +40,12 @@ internal abstract class Stmt {
     internal class Var(val name: Token, val initializer: Optional<Expr>) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
             return visitor.visitVarStmt(this)
+        }
+    }
+
+    internal class While(val condition: Expr, val body: Stmt) : Stmt() {
+        override fun <R> accept(visitor: Stmt.Visitor<R>): R {
+            return visitor.visitWhileStmt(this)
         }
     }
 

@@ -136,11 +136,17 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         executeBlock(stmt.statements, Environment(environment));
     }
 
-    override fun visitIfStmt(expr: Stmt.If) {
-        if (isTruthy(evaluate(expr.condition))) {
-            execute(expr.thenBranch)
-        } else if (expr.elseBranch.isPresent){
-            execute(expr.elseBranch.get())
+    override fun visitIfStmt(stmt: Stmt.If) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch)
+        } else if (stmt.elseBranch.isPresent){
+            execute(stmt.elseBranch.get())
+        }
+    }
+
+    override fun visitWhileStmt(stmt: Stmt.While) {
+        while(isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body)
         }
     }
 
