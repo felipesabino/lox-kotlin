@@ -36,7 +36,7 @@ internal abstract class Stmt {
         }
     }
 
-    internal class Var(val name: Token, val initializer: Expr?) : Stmt() {
+    internal class Var(val name: Token, val initializer: Optional<Expr>) : Stmt() {
         override fun <R> accept(visitor: Stmt.Visitor<R>): R {
             return visitor.visitVarStmt(this)
         }

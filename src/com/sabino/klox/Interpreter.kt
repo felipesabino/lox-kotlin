@@ -113,8 +113,8 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     override fun visitVarStmt(stmt: Stmt.Var) {
 
         var value: Optional<Any> = Optional.empty()
-        if (stmt.initializer != null) {
-            value = evaluate(stmt.initializer)
+        if (stmt.initializer.isPresent) {
+            value = evaluate(stmt.initializer.get())
         }
 
         environment.define(stmt.name.lexeme, value)

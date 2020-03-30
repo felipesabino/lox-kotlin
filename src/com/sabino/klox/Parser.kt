@@ -83,9 +83,9 @@ internal class Parser(val tokens: List<Token>) {
     private fun varDeclaration(): Stmt {
         val name = consume(IDENTIFIER, "Expect variable name")
 
-        var initializer: Expr? = null
+        var initializer: Optional<Expr> = Optional.empty()
         if (match(EQUAL)) {
-            initializer = expression()
+            initializer = Optional.of(expression())
         }
 
         consume(SEMICOLON, "Expect '; after variable declaration")

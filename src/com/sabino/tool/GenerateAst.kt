@@ -30,7 +30,7 @@ class GenerateAst {
                 "Expression : Expr expression",
                 "If         : Expr condition, Stmt thenBranch, Optional<Stmt> elseBranch",
                 "Print      : Expr expression",
-                "Var        : Token name, Expr? initializer"
+                "Var        : Token name, Optional<Expr> initializer"
             ));
         }
 
