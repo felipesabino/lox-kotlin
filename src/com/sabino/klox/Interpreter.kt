@@ -2,6 +2,7 @@ package com.sabino.klox
 
 import java.util.*
 
+
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
@@ -111,6 +112,24 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
 
         return evaluate(expr.right)
+    }
+
+    override fun visitCallExpr(expr: Expr.Call): Optional<Any> {
+        val callee = evaluate(expr.callee)
+
+        val arguments = expr.arguments.map { evaluate(it) }
+
+        if (callee !is KloxCallable) {
+            throw RuntimeError(expr.paren, "Can only call functions and classes.")
+        }
+
+        val function = callee as KloxCallable
+
+        if (arguments.size != function.arity()) {
+            throw RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${arguments.size}.")
+        }
+
+        return function.call(this, arguments)
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {

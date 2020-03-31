@@ -7,6 +7,7 @@ internal abstract class Expr {
   interface Visitor<R> {
     fun visitAssignExpr(expr: Assign): R
     fun visitBinaryExpr(expr: Binary): R
+    fun visitCallExpr(expr: Call): R
     fun visitGroupingExpr(expr: Grouping): R
     fun visitLiteralExpr(expr: Literal): R
     fun visitLogicalExpr(expr: Logical): R
@@ -23,6 +24,12 @@ internal abstract class Expr {
     internal class Binary(val left: Expr, val operator: Token, val right: Expr) : Expr() {
         override fun <R> accept(visitor: Expr.Visitor<R>): R {
             return visitor.visitBinaryExpr(this)
+        }
+    }
+
+    internal class Call(val callee: Expr, val paren: Token, val arguments: List<Expr>) : Expr() {
+        override fun <R> accept(visitor: Expr.Visitor<R>): R {
+            return visitor.visitCallExpr(this)
         }
     }
 

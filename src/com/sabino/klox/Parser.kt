@@ -1,7 +1,6 @@
 package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
-import com.sabino.klox.Stmt.While
 import com.sabino.klox.TokenType.*
 import java.util.*
 
@@ -61,8 +60,11 @@ internal class Parser(val tokens: List<Token>) {
         comparison      → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
         addition        → multiplication ( ( "-" | "+" ) multiplication )* ;
         multiplication  → unary ( ( "/" | "*" ) unary )* ;
-        unary           → ( "!" | "-" ) unary
-                        | primary ;
+        unary           → ( "!" | "-" ) unary | call ;
+
+        call            → primary ( "(" arguments? ")" )* ;
+        arguments       → expression ( "," expression )* ;
+
         primary         → "false" | "true" | "nil"
                         | NUMBER | STRING |
                         | "(" expression ")"
@@ -315,15 +317,27 @@ internal class Parser(val tokens: List<Token>) {
         return expr
     }
 
-    // unary          → ( "!" | "-" ) unary
-    //                | primary ;
+    // unary          → ( "!" | "-" ) unary | call
     private fun unary(): Expr {
         if (match(TokenType.BANG, MINUS)) {
             val operator = previous()
             val right = unary()
             return Expr.Unary(operator, right)
         }
-        return primary()
+        return call()
+    }
+
+    // call → primary ( "(" arguments? ")" )* ;
+    private fun call(): Expr {
+        var expr: Expr = primary()
+        while (true) {
+            if (match(LEFT_PAREN)) {
+                expr = finishCall(expr)
+            } else {
+                break
+            }
+        }
+        return expr
     }
 
     // primary         → "false" | "true" | "nil"
@@ -419,5 +433,19 @@ internal class Parser(val tokens: List<Token>) {
             }
             advance()
         }
+    }
+
+    private fun finishCall(callee: Expr): Expr {
+        val arguments: MutableList<Expr> = mutableListOf()
+        if (check(RIGHT_PAREN).not()) {
+            do {
+                if (arguments.count() >= 255) {
+                    error(peek(), "Cannot have more than 255 arguments.");
+                }
+                arguments.add(expression())
+            } while (match(COMMA))
+        }
+        val paren = consume(RIGHT_PAREN, "Expect ')' after arguments.")
+        return Expr.Call(callee, paren, arguments)
     }
 }
