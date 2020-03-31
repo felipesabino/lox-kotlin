@@ -340,6 +340,20 @@ internal class Parser(val tokens: List<Token>) {
         return expr
     }
 
+    private fun finishCall(callee: Expr): Expr {
+        val arguments: MutableList<Expr> = mutableListOf()
+        if (check(RIGHT_PAREN).not()) {
+            do {
+                if (arguments.count() >= 255) {
+                    error(peek(), "Cannot have more than 255 arguments.");
+                }
+                arguments.add(expression())
+            } while (match(COMMA))
+        }
+        val paren = consume(RIGHT_PAREN, "Expect ')' after arguments.")
+        return Expr.Call(callee, paren, arguments)
+    }
+
     // primary         → "false" | "true" | "nil"
     //                | NUMBER | STRING |
     //                | "(" expression ")"
@@ -433,19 +447,5 @@ internal class Parser(val tokens: List<Token>) {
             }
             advance()
         }
-    }
-
-    private fun finishCall(callee: Expr): Expr {
-        val arguments: MutableList<Expr> = mutableListOf()
-        if (check(RIGHT_PAREN).not()) {
-            do {
-                if (arguments.count() >= 255) {
-                    error(peek(), "Cannot have more than 255 arguments.");
-                }
-                arguments.add(expression())
-            } while (match(COMMA))
-        }
-        val paren = consume(RIGHT_PAREN, "Expect ')' after arguments.")
-        return Expr.Call(callee, paren, arguments)
     }
 }

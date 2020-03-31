@@ -1,13 +1,19 @@
 package com.sabino.klox
 
-import java.util.*
+import com.sabino.klox.primitives.Clock
+import java.util.Optional
 
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
 
-    private var environment = Environment()
+    private val globals = Environment()
+    private var environment = globals
+
+    constructor() {
+        globals.define("clock", Optional.of(Clock()))
+    }
 
     fun interpret(statements: Iterable<Stmt>) {
         try {
@@ -119,11 +125,11 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
         val arguments = expr.arguments.map { evaluate(it) }
 
-        if (callee !is KloxCallable) {
+        if (callee.filter { it is KloxCallable }.isPresent.not()) {
             throw RuntimeError(expr.paren, "Can only call functions and classes.")
         }
 
-        val function = callee as KloxCallable
+        val function = callee.get() as KloxCallable
 
         if (arguments.size != function.arity()) {
             throw RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${arguments.size}.")
