@@ -133,7 +133,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitBlockStmt(stmt: Stmt.Block) {
-        executeBlock(stmt.statements, Environment(environment));
+        executeBlock(stmt.statements, Environment(environment))
     }
 
     override fun visitIfStmt(stmt: Stmt.If) {
@@ -190,12 +190,12 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         stmt.accept(this)
     }
 
-    fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
+    private fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
         val previous = this.environment
         try {
             this.environment = environment
             for (statement in statements) {
-                execute(statement!!)
+                execute(statement)
             }
         } finally {
             this.environment = previous
