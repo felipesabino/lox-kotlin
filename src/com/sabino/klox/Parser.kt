@@ -2,6 +2,7 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
+import com.sun.tools.example.debug.expr.ExpressionParserConstants.IDENTIFIER
 import java.util.*
 
 
@@ -28,8 +29,13 @@ internal class Parser(val tokens: List<Token>) {
 
         program         → declaration* EOF ;
 
-        declaration     → varDecl
+        declaration     → funDecl
+                        | varDecl
                         | statement ;
+
+        funDecl         → "fun" function ;
+        function        → IDENTIFIER "(" parameters? ")" block ;
+        parameters      → IDENTIFIER ( "," IDENTIFIER )* ;
 
         varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
@@ -80,10 +86,11 @@ internal class Parser(val tokens: List<Token>) {
      */
 
     private var current = 0
-    // declaration     → varDecl
-    //                 | statement ;
+
+    // declaration     → funDecl | varDecl  | statement ;
     private fun declaration(): Optional<Stmt> {
         return Optional.ofNullable(try {
+            if (match(FUN)) return function("function");
             if (match(VAR)) varDeclaration()
             else statement()
         } catch (e: ParserError) {
@@ -189,6 +196,25 @@ internal class Parser(val tokens: List<Token>) {
         val expr = expression()
         consume(SEMICOLON, "Expect ';' after value")
         return Stmt.Expression(expr)
+    }
+
+    private fun function(kind: String): Stmt.Function {
+        val name = consume(TokenType.IDENTIFIER, "Expected ${kind} name")
+        val parameters: MutableList<Token> = mutableListOf()
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
+                    error(peek(), "Cannot have more than 255 parameters.")
+                }
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."))
+            } while (match(COMMA))
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.")
+
+        consume(LEFT_BRACE, "Expect '{' before ${kind} body.")
+        val body = block()
+        return Stmt.Function(name, parameters, body)
+
     }
 
     // whileStmt → "while" "(" expression ")" statement ;

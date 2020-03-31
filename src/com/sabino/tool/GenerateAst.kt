@@ -18,7 +18,7 @@ class GenerateAst {
             defineAst(outputDir, "Expr", listOf(
                 "Assign   : Token name, Expr value",
                 "Binary   : Expr left, Token operator, Expr right",
-                "Call     : Expr callee, Token paren, List<Expr> arguments",
+                "Call     : Expr callee, Token paren, Iterable<Expr> arguments",
                 "Grouping : Expr expression",
                 "Literal  : Optional<Any> value",
                 "Logical  : Expr left, Token operator, Expr right",
@@ -30,6 +30,7 @@ class GenerateAst {
             defineAst(outputDir, "Stmt", listOf(
                 "Block      : Iterable<Stmt> statements",
                 "Expression : Expr expression",
+                "Function   : Token name, Iterable<Token> params, Iterable<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Optional<Stmt> elseBranch",
                 "Print      : Expr expression",
                 "Var        : Token name, Optional<Expr> initializer",

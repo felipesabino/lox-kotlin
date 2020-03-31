@@ -27,7 +27,7 @@ internal abstract class Expr {
         }
     }
 
-    internal class Call(val callee: Expr, val paren: Token, val arguments: List<Expr>) : Expr() {
+    internal class Call(val callee: Expr, val paren: Token, val arguments: Iterable<Expr>) : Expr() {
         override fun <R> accept(visitor: Expr.Visitor<R>): R {
             return visitor.visitCallExpr(this)
         }
