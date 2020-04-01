@@ -2,14 +2,17 @@ package com.sabino.lox
 
 import java.util.*
 
-internal class LoxFunction(private val declaration: Stmt.Function): LoxCallable {
+internal class LoxFunction(
+    private val declaration: Stmt.Function,
+    private val closure: Environment
+): LoxCallable {
 
     override fun arity(): Int {
         return declaration.params.count() // TODO: should use other collection class instead to avoid O(n) here?
     }
 
     override fun call(interpreter: Interpreter, arguments: Iterable<Any>): Optional<Any> {
-        val environment = Environment(interpreter.globals)
+        val environment = Environment(closure)
 
         val argumentsList = arguments.toList() // TODO: how to avoid this and loop both iterables synchronously?
         declaration.params.forEachIndexed {
