@@ -22,7 +22,7 @@ internal class AstPrinter : Expr.Visitor<String> {
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): String {
-        return parenthesize(expr.operator.lexeme, expr.right);
+        return parenthesize(expr.operator.lexeme, expr.right)
     }
 
     private fun parenthesize(name: String, vararg exprs: Expr): String {

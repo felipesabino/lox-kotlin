@@ -4,11 +4,9 @@ import com.sabino.klox.Interpreter.RuntimeError
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.lang.System.exit
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.math.exp
 import kotlin.system.exitProcess
 
 
@@ -36,8 +34,8 @@ class Klox {
             run(String(bytes, Charset.defaultCharset()))
 
             // Indicate an error in the exit code.
-            if (hadError) exit(65)
-            if (hadRuntimeError) exit(70)
+            if (hadError) exitProcess(65)
+            if (hadRuntimeError) exitProcess(70)
         }
 
         @Throws(IOException::class)
@@ -64,7 +62,7 @@ class Klox {
             // stop in case of a syntax error
             if (hadError ) { return }
 
-            interpreter.interpret(statements);
+            interpreter.interpret(statements)
         }
 
         internal fun error(line: Int, message: String) {

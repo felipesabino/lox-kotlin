@@ -6,12 +6,12 @@ import java.util.Optional
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
-    class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
+    class RuntimeError(val token: Token, override val message: String): RuntimeException()
 
     val globals = Environment()
     private var environment = globals
 
-    constructor() {
+    init {
         globals.define("clock", Optional.of(Clock()))
     }
 
@@ -204,7 +204,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     private fun stringify(value: Optional<Any>): String {
-        if (value.isPresent.not() || value.get() == null) return "nil"
+        if (value.isPresent.not()) return "nil"
         // Hack. Work around Java adding ".0" to integer-valued doubles.
         if (value.get() is Double) {
             var text = value.get().toString()

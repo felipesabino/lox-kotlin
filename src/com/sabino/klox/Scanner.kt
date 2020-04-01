@@ -41,8 +41,7 @@ internal class Scanner(private val source: String) {
     }
 
     private fun scanToken() {
-        val c = advance()
-        when (c) {
+        when (val c = advance()) {
             '(' -> addToken(LEFT_PAREN)
             ')' -> addToken(RIGHT_PAREN)
             '{' -> addToken(LEFT_BRACE)

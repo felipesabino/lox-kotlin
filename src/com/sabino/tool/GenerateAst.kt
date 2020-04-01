@@ -2,6 +2,7 @@ package com.sabino.tool
 
 import java.io.IOException
 import java.io.PrintWriter
+import kotlin.system.exitProcess
 
 
 class GenerateAst {
@@ -11,7 +12,7 @@ class GenerateAst {
         @JvmStatic fun main(args: Array<String>) {
             if (args.size != 1) {
                 System.err.println("Usage: generate_ast <output directory>")
-                System.exit(1)
+                exitProcess(1)
             }
             val outputDir = args[0]
 
@@ -35,7 +36,7 @@ class GenerateAst {
                 "Print      : Expr expression",
                 "Var        : Token name, Optional<Expr> initializer",
                 "While      : Expr condition, Stmt body"
-            ));
+            ))
         }
 
         @Throws(IOException::class)
@@ -43,7 +44,7 @@ class GenerateAst {
             outputDir: String, baseName: String, typeList: List<String>
         ) {
 
-            val types = typeList.map { Pair(
+            val types = typeList.map { it -> Pair(
                 it.split(':')[0].trim { it <= ' ' },
                 it.split(':')[1]
                     .trim { it <= ' ' }
@@ -58,10 +59,10 @@ class GenerateAst {
             writer.println("import java.util.Optional")
             writer.println()
             writer.println("internal abstract class $baseName {")
-            writer.println();
+            writer.println()
 
             // Visitor interface
-            defineVisitor(writer, baseName, types.map { it.first });
+            defineVisitor(writer, baseName, types.map { it.first })
 
             // The AST classes.
             for (type in types) {
@@ -71,8 +72,8 @@ class GenerateAst {
             }
 
             // The base accept() method.
-            writer.println();
-            writer.println("  abstract fun <R> accept(visitor: Visitor<R>): R");
+            writer.println()
+            writer.println("  abstract fun <R> accept(visitor: Visitor<R>): R")
 
             writer.println("}")
             writer.close()
@@ -83,7 +84,7 @@ class GenerateAst {
         ) {
             writer.println("  interface Visitor<R> {")
             types
-                .map { "    fun visit${it}${baseName}(expr: ${it}): R" }
+                .map { "    fun visit${it}${baseName}(${baseName.toLowerCase()}: ${it}): R" }
                 .forEach(writer::println)
 
             writer.println("  }")
@@ -94,13 +95,11 @@ class GenerateAst {
             className: String, fieldList: List<Pair<String, String>>
         ) {
 
-            val fields = fieldList
-                .map { "val ${it.second}: ${it.first}" }
-                .joinToString(separator = ", ")
+            val fields = fieldList.joinToString(separator = ", ") { "val ${it.second}: ${it.first}" }
 
             writer.println("""
     internal class ${className}(${fields}) : ${baseName}() {
-        override fun <R> accept(visitor: ${baseName}.Visitor<R>): R {
+        override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visit${className}${baseName}(this)
         }
     }""")

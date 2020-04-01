@@ -26,15 +26,10 @@ internal class Environment {
         fail(token)
     }
 
-    fun assign(token: Token, value: Optional<Any>) {
-
-        if (values.containsKey(token.lexeme)) {
-            values[token.lexeme] = value
-        } else if (enclosing.isPresent) {
-            enclosing.get().assign(token, value)
-        } else {
-            fail(token)
-        }
+    fun assign(token: Token, value: Optional<Any>) : Unit = when {
+        values.containsKey(token.lexeme) -> values[token.lexeme] = value
+        enclosing.isPresent -> enclosing.get().assign(token, value)
+        else -> fail(token)
     }
 
     @Throws
