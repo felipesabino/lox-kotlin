@@ -18,7 +18,11 @@ internal class LoxFunction(private val declaration: Stmt.Function): LoxCallable 
             environment.define(item.lexeme, argumentsList[index] as Optional<Any>)
         }
 
-        interpreter.executeBlock(declaration.body, environment)
+        try {
+            interpreter.executeBlock(declaration.body, environment)
+        } catch (returnValue: Return) {
+            return returnValue.value
+        }
 
         return Optional.empty()
     }

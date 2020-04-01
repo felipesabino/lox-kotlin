@@ -34,6 +34,7 @@ class GenerateAst {
                 "Function   : Token name, Iterable<Token> params, Iterable<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Optional<Stmt> elseBranch",
                 "Print      : Expr expression",
+                "Return     : Token keyword, Optional<Expr> value",
                 "Var        : Token name, Optional<Expr> initializer",
                 "While      : Expr condition, Stmt body"
             ))

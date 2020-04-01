@@ -180,6 +180,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         environment.define(stmt.name.lexeme, Optional.of(function))
     }
 
+    override fun visitReturnStmt(stmt: Stmt.Return) {
+        throw Return(if (stmt.value.isPresent) evaluate(stmt.value.get()) else Optional.empty())
+    }
+
     private fun evaluate(expr: Expr): Optional<Any> {
         return expr.accept(this)
     }

@@ -2,7 +2,7 @@ package com.sabino.lox
 
 import com.sabino.lox.Expr.Literal
 import com.sabino.lox.TokenType.*
-import java.util.Optional
+import java.util.*
 
 
 internal class Parser(private val tokens: List<Token>) {
@@ -29,6 +29,7 @@ internal class Parser(private val tokens: List<Token>) {
                         | forStmt
                         | ifStmt
                         | printStmt
+                        | returnStmt
                         | whileStmt
                         | block ;
 
@@ -38,6 +39,7 @@ internal class Parser(private val tokens: List<Token>) {
                         expression? ")" statement ;
         ifStmt          → "if" "(" expression ")" statement ( "else" statement )? ;
         printStmt       → "print" expression ";" ;
+        returnStmt      → "return" expression? ";" ;
         whileStmt       → "while" "(" expression ")" statement ;
         block           → "{" declaration* "}" ;
 
@@ -110,6 +112,7 @@ internal class Parser(private val tokens: List<Token>) {
             match(FOR) -> { forStatement() }
             match(IF) -> { ifStatement() }
             match(PRINT) -> { printStatement() }
+            match(RETURN) ->{ returnStatement() }
             match(WHILE) -> { whileStatement() }
             match(LEFT_BRACE) -> { Stmt.Block(block()) }
             else -> { expressionStatement() }
@@ -177,6 +180,18 @@ internal class Parser(private val tokens: List<Token>) {
         val value = expression()
         consume(SEMICOLON, "Expect ';' after value")
         return Stmt.Print(value)
+    }
+
+    private fun returnStatement(): Stmt {
+        val keyword = previous()
+
+        var value: Optional<Expr> = Optional.empty()
+        if (!check(SEMICOLON)) {
+            value = Optional.of(expression())
+        }
+
+        consume(SEMICOLON, "Expect ';' after return value.")
+        return Stmt.Return(keyword, value)
     }
 
     private fun expressionStatement(): Stmt {
