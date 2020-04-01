@@ -8,7 +8,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     class RuntimeError(val token: Token, override val message: String): RuntimeException() { }
 
-    private val globals = Environment()
+    val globals = Environment()
     private var environment = globals
 
     constructor() {
@@ -175,6 +175,11 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
     }
 
+    override fun visitFunctionStmt(stmt: Stmt.Function) {
+        val function = KloxFunction(stmt)
+        environment.define(stmt.name.lexeme, Optional.of(function))
+    }
+
     private fun evaluate(expr: Expr): Optional<Any> {
         return expr.accept(this)
     }
@@ -215,7 +220,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         stmt.accept(this)
     }
 
-    private fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
+    fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
         val previous = this.environment
         try {
             this.environment = environment

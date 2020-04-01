@@ -2,8 +2,7 @@ package com.sabino.klox
 
 import com.sabino.klox.Expr.Literal
 import com.sabino.klox.TokenType.*
-import com.sun.tools.example.debug.expr.ExpressionParserConstants.IDENTIFIER
-import java.util.*
+import java.util.Optional
 
 
 internal class Parser(val tokens: List<Token>) {
@@ -90,8 +89,8 @@ internal class Parser(val tokens: List<Token>) {
     // declaration     → funDecl | varDecl  | statement ;
     private fun declaration(): Optional<Stmt> {
         return Optional.ofNullable(try {
-            if (match(FUN)) return function("function");
-            if (match(VAR)) varDeclaration()
+            if (match(FUN)) function("function");
+            else if (match(VAR)) varDeclaration()
             else statement()
         } catch (e: ParserError) {
             synchronize()
@@ -100,7 +99,7 @@ internal class Parser(val tokens: List<Token>) {
     }
 
     private fun varDeclaration(): Stmt {
-        val name = consume(IDENTIFIER, "Expect variable name")
+        val name = consume(TokenType.IDENTIFIER, "Expect variable name")
 
         var initializer: Optional<Expr> = Optional.empty()
         if (match(EQUAL)) {
@@ -200,6 +199,9 @@ internal class Parser(val tokens: List<Token>) {
 
     private fun function(kind: String): Stmt.Function {
         val name = consume(TokenType.IDENTIFIER, "Expected ${kind} name")
+
+        consume(LEFT_PAREN, "Expect '(' after ${kind} name.");
+
         val parameters: MutableList<Token> = mutableListOf()
         if (!check(RIGHT_PAREN)) {
             do {
@@ -212,6 +214,7 @@ internal class Parser(val tokens: List<Token>) {
         consume(RIGHT_PAREN, "Expect ')' after parameters.")
 
         consume(LEFT_BRACE, "Expect '{' before ${kind} body.")
+
         val body = block()
         return Stmt.Function(name, parameters, body)
 
@@ -393,7 +396,7 @@ internal class Parser(val tokens: List<Token>) {
             return Literal(previous().literal)
         }
 
-        if (match(IDENTIFIER)) {
+        if (match(TokenType.IDENTIFIER)) {
             return Expr.Variable(previous())
         }
 
