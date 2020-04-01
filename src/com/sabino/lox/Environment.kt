@@ -1,6 +1,6 @@
-package com.sabino.klox
+package com.sabino.lox
 
-import com.sabino.klox.Interpreter.RuntimeError
+import com.sabino.lox.Interpreter.RuntimeError
 import java.util.*
 
 

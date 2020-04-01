@@ -1,7 +1,4 @@
-package com.sabino.klox
-
-import com.sabino.klox.Expr
-import kotlin.math.exp
+package com.sabino.lox
 
 internal class AstPrinter : Expr.Visitor<String> {
 

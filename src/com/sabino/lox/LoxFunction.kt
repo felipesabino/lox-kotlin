@@ -1,8 +1,8 @@
-package com.sabino.klox
+package com.sabino.lox
 
 import java.util.*
 
-internal class KloxFunction(private val declaration: Stmt.Function): KloxCallable {
+internal class LoxFunction(private val declaration: Stmt.Function): LoxCallable {
 
     override fun arity(): Int {
         return declaration.params.count() // TODO: should use other collection class instead to avoid O(n) here?

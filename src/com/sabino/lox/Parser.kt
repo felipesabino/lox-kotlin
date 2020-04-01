@@ -1,7 +1,7 @@
-package com.sabino.klox
+package com.sabino.lox
 
-import com.sabino.klox.Expr.Literal
-import com.sabino.klox.TokenType.*
+import com.sabino.lox.Expr.Literal
+import com.sabino.lox.TokenType.*
 import java.util.Optional
 
 
@@ -433,7 +433,7 @@ internal class Parser(private val tokens: List<Token>) {
     }
 
     private fun error(token: Token, message: String): ParserError {
-        Klox.error(token, message)
+        Lox.error(token, message)
         return ParserError()
     }
 

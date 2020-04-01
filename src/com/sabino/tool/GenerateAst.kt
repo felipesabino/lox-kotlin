@@ -54,7 +54,7 @@ class GenerateAst {
 
             val path = "$outputDir/$baseName.kt"
             val writer = PrintWriter(path, "UTF-8")
-            writer.println("package com.sabino.klox")
+            writer.println("package com.sabino.lox")
             writer.println()
             writer.println("import java.util.Optional")
             writer.println()

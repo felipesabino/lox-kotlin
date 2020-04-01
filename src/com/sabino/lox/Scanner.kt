@@ -1,6 +1,6 @@
-package com.sabino.klox
+package com.sabino.lox
 
-import com.sabino.klox.TokenType.*
+import com.sabino.lox.TokenType.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -63,7 +63,7 @@ internal class Scanner(private val source: String) {
             in '0'..'9' -> number()
             else -> {
                 if (isAlpha(c)) identifier()
-                else Klox.error(line, "Unexpected character '$c'.")
+                else Lox.error(line, "Unexpected character '$c'.")
             }
         }
     } 
@@ -113,7 +113,7 @@ internal class Scanner(private val source: String) {
         }
         // Unterminated string.
         if (isAtEnd()) {
-            Klox.error(line, "Unterminated string.")
+            Lox.error(line, "Unterminated string.")
             return
         }
         // The closing ".

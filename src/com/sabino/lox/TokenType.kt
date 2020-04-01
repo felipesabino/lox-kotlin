@@ -1,4 +1,4 @@
-package com.sabino.klox
+package com.sabino.lox
 
 enum class TokenType {
 

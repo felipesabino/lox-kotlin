@@ -1,6 +1,6 @@
-package com.sabino.klox
+package com.sabino.lox
 
-import com.sabino.klox.primitives.Clock
+import com.sabino.lox.primitives.Clock
 import java.util.Optional
 
 
@@ -19,7 +19,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         try {
             statements.forEach { execute(it) }
         } catch (error: RuntimeError) {
-            Klox.runtimeError(error)
+            Lox.runtimeError(error)
         }
     }
 
@@ -125,11 +125,11 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
         val arguments = expr.arguments.map { evaluate(it) }
 
-        if (callee.filter { it is KloxCallable }.isPresent.not()) {
+        if (callee.filter { it is LoxCallable }.isPresent.not()) {
             throw RuntimeError(expr.paren, "Can only call functions and classes.")
         }
 
-        val function = callee.get() as KloxCallable
+        val function = callee.get() as LoxCallable
 
         if (arguments.size != function.arity()) {
             throw RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${arguments.size}.")
@@ -176,7 +176,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitFunctionStmt(stmt: Stmt.Function) {
-        val function = KloxFunction(stmt)
+        val function = LoxFunction(stmt)
         environment.define(stmt.name.lexeme, Optional.of(function))
     }
 

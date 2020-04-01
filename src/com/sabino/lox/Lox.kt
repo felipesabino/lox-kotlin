@@ -1,6 +1,6 @@
-package com.sabino.klox
+package com.sabino.lox
 
-import com.sabino.klox.Interpreter.RuntimeError
+import com.sabino.lox.Interpreter.RuntimeError
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -10,7 +10,7 @@ import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 
-class Klox {
+class Lox {
     companion object {
         private var hadError = false
         private var hadRuntimeError = false

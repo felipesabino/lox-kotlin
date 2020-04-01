@@ -1,10 +1,10 @@
-package com.sabino.klox.primitives
+package com.sabino.lox.primitives
 
-import com.sabino.klox.Interpreter
-import com.sabino.klox.KloxCallable
+import com.sabino.lox.Interpreter
+import com.sabino.lox.LoxCallable
 import java.util.Optional
 
-internal class Clock : KloxCallable {
+internal class Clock : LoxCallable {
     override fun arity(): Int { return 0 }
 
     override fun call(interpreter: Interpreter, arguments: Iterable<Any>): Optional<Any> {
