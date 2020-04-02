@@ -1,5 +1,7 @@
 package com.sabino.lox
 
+import com.sabino.lox.types.Expr
+
 internal class AstPrinter : Expr.Visitor<String> {
 
     fun print(expr: Expr): String {

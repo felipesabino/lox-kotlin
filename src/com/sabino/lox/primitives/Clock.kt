@@ -1,7 +1,7 @@
 package com.sabino.lox.primitives
 
 import com.sabino.lox.Interpreter
-import com.sabino.lox.LoxCallable
+import com.sabino.lox.types.LoxCallable
 import java.util.Optional
 
 internal class Clock : LoxCallable {

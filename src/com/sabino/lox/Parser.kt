@@ -1,7 +1,11 @@
 package com.sabino.lox
 
-import com.sabino.lox.Expr.Literal
-import com.sabino.lox.TokenType.*
+import com.sabino.lox.types.Expr
+import com.sabino.lox.types.Expr.Literal
+import com.sabino.lox.types.Stmt
+import com.sabino.lox.types.TokenType.*
+import com.sabino.lox.types.Token
+import com.sabino.lox.types.TokenType
 import java.util.*
 
 

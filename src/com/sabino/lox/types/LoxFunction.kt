@@ -1,5 +1,7 @@
-package com.sabino.lox
+package com.sabino.lox.types
 
+import com.sabino.lox.Environment
+import com.sabino.lox.Interpreter
 import java.util.*
 
 internal class LoxFunction(

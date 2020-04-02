@@ -1,6 +1,8 @@
 package com.sabino.lox
 
 import com.sabino.lox.Interpreter.RuntimeError
+import com.sabino.lox.types.Token
+import com.sabino.lox.types.TokenType
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -60,6 +62,12 @@ class Lox {
             val statements = parser.parse().toList()
 
             // stop in case of a syntax error
+            if (hadError ) { return }
+
+            val resolver = Resolver(interpreter)
+            resolver.resolve(statements)
+
+            // stop in case of a resolution syntax error
             if (hadError ) { return }
 
             interpreter.interpret(statements)

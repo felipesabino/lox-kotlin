@@ -1,6 +1,8 @@
 package com.sabino.lox
 
-import com.sabino.lox.TokenType.*
+import com.sabino.lox.types.TokenType.*
+import com.sabino.lox.types.Token
+import com.sabino.lox.types.TokenType
 import java.util.*
 import kotlin.collections.ArrayList
 

@@ -1,6 +1,11 @@
 package com.sabino.lox
 
 import com.sabino.lox.primitives.Clock
+import com.sabino.lox.types.*
+import com.sabino.lox.types.Expr
+import com.sabino.lox.types.LoxCallable
+import com.sabino.lox.types.LoxFunction
+import com.sabino.lox.types.Token
 import java.util.Optional
 
 
@@ -10,6 +15,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     val globals = Environment()
     private var environment = globals
+    private var locals: MutableMap<Expr, Int> = mutableMapOf()
 
     init {
         globals.define("clock", Optional.of(Clock()))
@@ -98,13 +104,19 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
-        return environment.get(expr.name)
+        return lookupVariable(expr.name, expr)
     }
 
     override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
         val value: Optional<Any> = evaluate(expr.value)
 
-        environment.assign(expr.name, value)
+        val distance = Optional.ofNullable(locals[expr])
+        if (distance.isPresent) {
+            environment.assignAt(distance.get(), expr.name, value)
+        } else {
+            globals.assign(expr.name, value)
+        }
+
         return value
     }
 
@@ -224,6 +236,15 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         stmt.accept(this)
     }
 
+    private fun lookupVariable(token: Token, expr: Expr.Variable): Optional<Any> {
+        val distance = Optional.ofNullable(locals[expr])
+        return if (distance.isPresent) {
+            environment.getAt(distance.get(), token)
+        } else {
+            globals.get(token)
+        }
+    }
+
     fun executeBlock(statements: Iterable<Stmt>, environment: Environment) {
         val previous = this.environment
         try {
@@ -234,6 +255,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         } finally {
             this.environment = previous
         }
+    }
+
+    fun resolve(expr: Expr, depth: Int) {
+        locals.put(expr, depth)
     }
 
 }
