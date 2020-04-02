@@ -38,6 +38,11 @@ internal class Resolver(
         return Optional.empty()
     }
 
+    override fun visitGetExpr(expr: Expr.Get): Optional<Any> {
+        resolve(expr.obj)
+        return Optional.empty()
+    }
+
     override fun visitGroupingExpr(expr: Expr.Grouping): Optional<Any> {
         resolve(expr.expression)
         return Optional.empty()
@@ -50,6 +55,12 @@ internal class Resolver(
     override fun visitLogicalExpr(expr: Expr.Logical): Optional<Any> {
         resolve(expr.left)
         resolve(expr.right)
+        return Optional.empty()
+    }
+
+    override fun visitSetExpr(expr: Expr.Set): Optional<Any> {
+        resolve(expr.obj)
+        resolve(expr.value)
         return Optional.empty()
     }
 
@@ -178,4 +189,5 @@ internal class Resolver(
 
         currentFunctionType = enclosingFunctionType
     }
+
 }

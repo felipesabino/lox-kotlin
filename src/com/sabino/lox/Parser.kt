@@ -50,8 +50,8 @@ internal class Parser(private val tokens: List<Token>) {
         block           → "{" declaration* "}" ;
 
         expression      → assignment ;
-        assignment      → IDENTIFIER "=" assignment
-                        | logic_or ;
+        assignment      → ( call "." )? IDENTIFIER "=" assignment
+                        | logic_or;
 
         logic_or        → logic_and ( "or" logic_and )* ;
         logic_and       → equality ( "and" equality )* ;
@@ -62,7 +62,7 @@ internal class Parser(private val tokens: List<Token>) {
         multiplication  → unary ( ( "/" | "*" ) unary )* ;
         unary           → ( "!" | "-" ) unary | call ;
 
-        call            → primary ( "(" arguments? ")" )* ;
+        call            → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
         arguments       → expression ( "," expression )* ;
 
         primary         → "false" | "true" | "nil"
@@ -286,6 +286,9 @@ internal class Parser(private val tokens: List<Token>) {
             if (expr is Expr.Variable) {
                 val name = expr.name
                 return Expr.Assign(name, value)
+            } else if (expr is Expr.Get) {
+                val get = expr as Expr.Get
+                return Expr.Set(get.obj, get.name, value)
             }
             error(equals, "Invalid assignment target.")
         }
@@ -371,6 +374,9 @@ internal class Parser(private val tokens: List<Token>) {
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr)
+            } else if (match(DOT)) {
+                val name = consume(IDENTIFIER, "Expect property name after '.'.")
+                expr = Expr.Get(expr, name)
             } else {
                 break
             }

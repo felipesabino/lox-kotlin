@@ -2,11 +2,7 @@ package com.sabino.lox
 
 import com.sabino.lox.primitives.Clock
 import com.sabino.lox.types.*
-import com.sabino.lox.types.Expr
-import com.sabino.lox.types.LoxCallable
-import com.sabino.lox.types.LoxFunction
-import com.sabino.lox.types.Token
-import java.util.Optional
+import java.util.*
 
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
@@ -116,6 +112,15 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         return function.call(this, arguments)
     }
 
+    override fun visitGetExpr(expr: Expr.Get): Optional<Any> {
+        val obj = evaluate(expr.obj)
+        if (obj.filter { it is LoxInstance }.isPresent) {
+             val instance = obj.get() as LoxInstance
+            return instance.get(expr.name)
+        }
+        throw RuntimeError(expr.name, "Only instances have properties." )
+    }
+
     override fun visitGroupingExpr(expr: Expr.Grouping): Optional<Any> {
         return evaluate(expr.expression)
     }
@@ -134,6 +139,19 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
 
         return evaluate(expr.right)
+    }
+
+    override fun visitSetExpr(expr: Expr.Set): Optional<Any> {
+        val obj = evaluate(expr.obj)
+        if (obj.filter { it is LoxInstance }.isPresent.not()) {
+            throw RuntimeError(expr.name, "Only instances have properties." )
+        }
+        val value = evaluate(expr.value)
+
+        val instance = obj.get() as LoxInstance
+        instance.set(expr.name, value)
+
+        return value
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
@@ -266,7 +284,5 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     fun resolve(expr: Expr, depth: Int) {
         locals.put(expr, depth)
     }
-
-
 
 }
