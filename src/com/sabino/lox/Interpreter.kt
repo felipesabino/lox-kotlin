@@ -29,6 +29,19 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
     }
 
+    override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
+        val value: Optional<Any> = evaluate(expr.value)
+
+        val distance = Optional.ofNullable(locals[expr])
+        if (distance.isPresent) {
+            environment.assignAt(distance.get(), expr.name, value)
+        } else {
+            globals.assign(expr.name, value)
+        }
+
+        return value
+    }
+
     override fun visitBinaryExpr(expr: Expr.Binary): Optional<Any> {
         val left = evaluate(expr.left)
         val right = evaluate(expr.right)
@@ -85,53 +98,6 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         )
     }
 
-    override fun visitGroupingExpr(expr: Expr.Grouping): Optional<Any> {
-        return evaluate(expr.expression)
-    }
-
-    override fun visitLiteralExpr(expr: Expr.Literal): Optional<Any> {
-        return expr.value
-    }
-
-    override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
-        val right = evaluate(expr.right)
-
-        return when (expr.operator.type) {
-            TokenType.MINUS -> right.filter{ v -> v is Double }.map { v -> - (v as Double) }
-            TokenType.BANG -> Optional.of(isTruthy(right).not())
-            else -> Optional.empty()
-        }
-    }
-
-    override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
-        return lookupVariable(expr.name, expr)
-    }
-
-    override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
-        val value: Optional<Any> = evaluate(expr.value)
-
-        val distance = Optional.ofNullable(locals[expr])
-        if (distance.isPresent) {
-            environment.assignAt(distance.get(), expr.name, value)
-        } else {
-            globals.assign(expr.name, value)
-        }
-
-        return value
-    }
-
-    override fun visitLogicalExpr(expr: Expr.Logical): Optional<Any> {
-        val left = evaluate(expr.left)
-
-        if (expr.operator.type === TokenType.OR) {
-            if (isTruthy(left)) return left
-        } else {
-            if (!isTruthy(left)) return left
-        }
-
-        return evaluate(expr.right)
-    }
-
     override fun visitCallExpr(expr: Expr.Call): Optional<Any> {
         val callee = evaluate(expr.callee)
 
@@ -150,13 +116,74 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         return function.call(this, arguments)
     }
 
+    override fun visitGroupingExpr(expr: Expr.Grouping): Optional<Any> {
+        return evaluate(expr.expression)
+    }
+
+    override fun visitLiteralExpr(expr: Expr.Literal): Optional<Any> {
+        return expr.value
+    }
+
+    override fun visitLogicalExpr(expr: Expr.Logical): Optional<Any> {
+        val left = evaluate(expr.left)
+
+        if (expr.operator.type === TokenType.OR) {
+            if (isTruthy(left)) return left
+        } else {
+            if (!isTruthy(left)) return left
+        }
+
+        return evaluate(expr.right)
+    }
+
+    override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
+        val right = evaluate(expr.right)
+
+        return when (expr.operator.type) {
+            TokenType.MINUS -> right.filter{ v -> v is Double }.map { v -> - (v as Double) }
+            TokenType.BANG -> Optional.of(isTruthy(right).not())
+            else -> Optional.empty()
+        }
+    }
+
+    override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
+        return lookupVariable(expr.name, expr)
+    }
+
+    override fun visitBlockStmt(stmt: Stmt.Block) {
+        executeBlock(stmt.statements, Environment(environment))
+    }
+
+    override fun visitClassStmt(stmt: Stmt.Class) {
+        environment.define(stmt.name.lexeme, Optional.empty())
+        val klass = LoxClass(stmt.name.lexeme)
+        environment.assign(stmt.name, Optional.of(klass))
+    }
+
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
         evaluate(stmt.expression)
+    }
+
+    override fun visitFunctionStmt(stmt: Stmt.Function) {
+        val function = LoxFunction(stmt, environment)
+        environment.define(stmt.name.lexeme, Optional.of(function))
+    }
+
+    override fun visitIfStmt(stmt: Stmt.If) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch)
+        } else if (stmt.elseBranch.isPresent){
+            execute(stmt.elseBranch.get())
+        }
     }
 
     override fun visitPrintStmt(stmt: Stmt.Print) {
         val value = evaluate(stmt.expression)
         println(stringify(value))
+    }
+
+    override fun visitReturnStmt(stmt: Stmt.Return) {
+        throw Return(if (stmt.value.isPresent) evaluate(stmt.value.get()) else Optional.empty())
     }
 
     override fun visitVarStmt(stmt: Stmt.Var) {
@@ -169,31 +196,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         environment.define(stmt.name.lexeme, value)
     }
 
-    override fun visitBlockStmt(stmt: Stmt.Block) {
-        executeBlock(stmt.statements, Environment(environment))
-    }
-
-    override fun visitIfStmt(stmt: Stmt.If) {
-        if (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.thenBranch)
-        } else if (stmt.elseBranch.isPresent){
-            execute(stmt.elseBranch.get())
-        }
-    }
-
     override fun visitWhileStmt(stmt: Stmt.While) {
         while(isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body)
         }
-    }
-
-    override fun visitFunctionStmt(stmt: Stmt.Function) {
-        val function = LoxFunction(stmt, environment)
-        environment.define(stmt.name.lexeme, Optional.of(function))
-    }
-
-    override fun visitReturnStmt(stmt: Stmt.Return) {
-        throw Return(if (stmt.value.isPresent) evaluate(stmt.value.get()) else Optional.empty())
     }
 
     private fun evaluate(expr: Expr): Optional<Any> {
@@ -260,5 +266,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     fun resolve(expr: Expr, depth: Int) {
         locals.put(expr, depth)
     }
+
+
 
 }

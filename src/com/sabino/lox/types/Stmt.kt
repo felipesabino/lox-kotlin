@@ -6,6 +6,7 @@ internal abstract class Stmt {
 
   interface Visitor<R> {
     fun visitBlockStmt(stmt: Block): R
+    fun visitClassStmt(stmt: Class): R
     fun visitExpressionStmt(stmt: Expression): R
     fun visitFunctionStmt(stmt: Function): R
     fun visitIfStmt(stmt: If): R
@@ -18,6 +19,12 @@ internal abstract class Stmt {
     internal class Block(val statements: Iterable<Stmt>) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitBlockStmt(this)
+        }
+    }
+
+    internal class Class(val name: Token, val methods: Iterable<Stmt.Function>) : Stmt() {
+        override fun <R> accept(visitor: Visitor<R>): R {
+            return visitor.visitClassStmt(this)
         }
     }
 

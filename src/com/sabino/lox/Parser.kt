@@ -19,10 +19,12 @@ internal class Parser(private val tokens: List<Token>) {
 
         program         → declaration* EOF ;
 
-        declaration     → funDecl
+        declaration     → classDecl
+                        | funDecl
                         | varDecl
                         | statement ;
 
+        classDecl       → "class" IDENTIFIER "{" function* "}" ;
         funDecl         → "fun" function ;
         function        → IDENTIFIER "(" parameters? ")" block ;
         parameters      → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -89,6 +91,7 @@ internal class Parser(private val tokens: List<Token>) {
     private fun declaration(): Optional<Stmt> {
         return Optional.ofNullable(try {
             when {
+                match(CLASS) -> classDeclaration()
                 match(FUN) -> function("function")
                 match(VAR) -> varDeclaration()
                 else -> statement()
@@ -97,6 +100,19 @@ internal class Parser(private val tokens: List<Token>) {
             synchronize()
             null
         })
+    }
+
+    private fun classDeclaration(): Stmt {
+        val name = consume(IDENTIFIER, "Expected class name")
+        consume(LEFT_BRACE, "Expected '{' before class body'")
+
+        val methods: MutableList<Stmt.Function> = mutableListOf()
+        while(!check(RIGHT_BRACE) && isAtEnd().not()) {
+            methods.add(function("method"))
+        }
+
+        consume(RIGHT_BRACE, "Expected '}' after class body")
+        return Stmt.Class(name, methods)
     }
 
     private fun varDeclaration(): Stmt {
