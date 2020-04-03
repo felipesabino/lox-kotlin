@@ -3,6 +3,7 @@ package com.sabino.lox.types
 import com.sabino.lox.Interpreter
 import java.util.*
 
+
 internal class LoxInstance(private val klass: LoxClass) {
 
     private val fields: MutableMap<String, Optional<Any>> = mutableMapOf()
@@ -14,7 +15,11 @@ internal class LoxInstance(private val klass: LoxClass) {
         }
 
         val method = klass.findMethod(name.lexeme)
-        if (method.isPresent) { return method.map { it as Any } }
+        if (method.isPresent) {
+            return method
+                .map { it.bind(this) }
+                .map { it as Any }
+        }
 
         throw Interpreter.RuntimeError(name, "Undefined property '${name.lexeme}'.")
     }
@@ -26,4 +31,5 @@ internal class LoxInstance(private val klass: LoxClass) {
     override fun toString(): String {
         return "${klass.name} instance"
     }
+
 }

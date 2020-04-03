@@ -164,6 +164,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
     }
 
+    override fun visitThisExpr(expr: Expr.This): Optional<Any> {
+        return lookupVariable(expr.keyword, expr)
+    }
+
     override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
         return lookupVariable(expr.name, expr)
     }
@@ -265,7 +269,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         stmt.accept(this)
     }
 
-    private fun lookupVariable(token: Token, expr: Expr.Variable): Optional<Any> {
+    private fun lookupVariable(token: Token, expr: Expr): Optional<Any> {
         val distance = Optional.ofNullable(locals[expr])
         return if (distance.isPresent) {
             environment.getAt(distance.get(), token)

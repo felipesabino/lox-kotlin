@@ -31,6 +31,11 @@ internal class LoxFunction(
 
         return Optional.empty()
     }
+    fun bind(instance: LoxInstance): LoxFunction {
+        val environment = Environment(closure)
+        environment.define("this", Optional.of(instance))
+        return LoxFunction(declaration, environment)
+    }
 
     override fun toString(): String {
         return "<fn ${declaration.name.lexeme}>"

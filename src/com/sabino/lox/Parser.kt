@@ -407,6 +407,10 @@ internal class Parser(private val tokens: List<Token>) {
             return Literal(previous().literal)
         }
 
+        if (match(THIS)) {
+            return Expr.This(previous())
+        }
+
         if (match(IDENTIFIER)) {
             return Expr.Variable(previous())
         }

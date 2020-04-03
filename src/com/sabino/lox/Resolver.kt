@@ -64,6 +64,11 @@ internal class Resolver(
         return Optional.empty()
     }
 
+    override fun visitThisExpr(expr: Expr.This): Optional<Any> {
+        resolveLocal(expr, expr.keyword)
+        return Optional.empty()
+    }
+
     override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
         resolve(expr.right)
         return Optional.empty()
@@ -88,7 +93,12 @@ internal class Resolver(
         declare(stmt.name)
         define(stmt.name)
 
+        beginScope()
+
+        scopes.peek()["this"] = true
         stmt.methods.forEach { resolveFunction(it, FunctionType.METHOD) }
+
+        endScope()
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
