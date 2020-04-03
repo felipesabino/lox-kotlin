@@ -87,6 +87,8 @@ internal class Resolver(
     override fun visitClassStmt(stmt: Stmt.Class) {
         declare(stmt.name)
         define(stmt.name)
+
+        stmt.methods.forEach { resolveFunction(it, FunctionType.METHOD) }
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {

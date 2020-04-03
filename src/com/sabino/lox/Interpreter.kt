@@ -174,7 +174,12 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
     override fun visitClassStmt(stmt: Stmt.Class) {
         environment.define(stmt.name.lexeme, Optional.empty())
-        val klass = LoxClass(stmt.name.lexeme)
+
+        val methods: Map<String, LoxFunction> = stmt.methods
+            .associateBy( { it.name.lexeme }, { it })
+            .mapValues { LoxFunction(it.value, environment) }
+
+        val klass = LoxClass(stmt.name.lexeme, methods)
         environment.assign(stmt.name, Optional.of(klass))
     }
 

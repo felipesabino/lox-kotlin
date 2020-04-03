@@ -13,6 +13,9 @@ internal class LoxInstance(private val klass: LoxClass) {
             return fields.getOrDefault(name.lexeme, Optional.empty())
         }
 
+        val method = klass.findMethod(name.lexeme)
+        if (method.isPresent) { return method.map { it as Any } }
+
         throw Interpreter.RuntimeError(name, "Undefined property '${name.lexeme}'.")
     }
 
