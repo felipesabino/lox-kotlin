@@ -107,7 +107,11 @@ internal class Resolver(
         beginScope()
 
         scopes.peek()["this"] = true
-        stmt.methods.forEach { resolveFunction(it, FunctionType.METHOD) }
+        stmt.methods.forEach {
+            val declaration =
+                if (it.name.lexeme == "init") FunctionType.INITIALIZER else FunctionType.METHOD
+            resolveFunction(it, declaration)
+        }
 
         endScope()
         currentClassType = enclosingClasstype
@@ -143,6 +147,9 @@ internal class Resolver(
         }
 
         if (stmt.value.isPresent) {
+            if (currentFunctionType == FunctionType.INITIALIZER) {
+                Lox.error(stmt.keyword, "Cannot return a value from an initializer.")
+            }
             resolve(stmt.value.get())
         }
     }

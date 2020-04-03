@@ -22,22 +22,30 @@ internal class Environment {
     }
 
     fun get(token: Token): Optional<Any> {
+        return get(token.lexeme)
+    }
 
-        if (values.containsKey(token.lexeme)) {
-            return values.getOrElse(token.lexeme, { fail(token) })
+    fun get(name: String): Optional<Any> {
+
+        if (values.containsKey(name)) {
+            return values.getOrElse(name, { fail(name) })
         }
 
         if (enclosing.isPresent) {
-            return enclosing.get().get(token)
+            return enclosing.get().get(name)
         }
 
-        fail(token)
+        fail(name)
     }
 
     fun getAt(distance: Int, token: Token): Optional<Any> {
+        return getAt(distance, token.lexeme)
+    }
+
+    fun getAt(distance: Int, name: String): Optional<Any> {
         val environment = ancestor(distance)
         if (environment.isPresent) {
-            return environment.get().get(token)
+            return environment.get().get(name)
         } else {
             throw Parser.ParserError() //TODO: Fix exception type, should it be a resolver error?
         }
@@ -60,8 +68,13 @@ internal class Environment {
 
 
     @Throws
-    private fun fail(name: Token): Nothing {
-        throw RuntimeError(name, "Undefined variable '${name.lexeme}'.")
+    private fun fail(name: String): Nothing {
+        throw Parser.ParserError() //TODO: Fix exception type, should it be a resolver error?
+    }
+
+    @Throws
+    private fun fail(token: Token): Nothing {
+        throw RuntimeError(token, "Undefined variable '${token.lexeme}'.")
     }
 
     private fun ancestor(distance: Int): Optional<Environment> {

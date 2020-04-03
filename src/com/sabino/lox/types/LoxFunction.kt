@@ -6,7 +6,8 @@ import java.util.*
 
 internal class LoxFunction(
     private val declaration: Stmt.Function,
-    private val closure: Environment
+    private val closure: Environment,
+    private val isInitializer: Boolean
 ): LoxCallable {
 
     override fun arity(): Int {
@@ -26,15 +27,17 @@ internal class LoxFunction(
         try {
             interpreter.executeBlock(declaration.body, environment)
         } catch (returnValue: Return) {
-            return returnValue.value
+            return if (isInitializer) closure.getAt(0, "this")
+            else returnValue.value
         }
 
+        if (isInitializer) return closure.getAt(0, "this")
         return Optional.empty()
     }
     fun bind(instance: LoxInstance): LoxFunction {
         val environment = Environment(closure)
         environment.define("this", Optional.of(instance))
-        return LoxFunction(declaration, environment)
+        return LoxFunction(declaration, environment, isInitializer)
     }
 
     override fun toString(): String {

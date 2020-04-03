@@ -6,15 +6,25 @@ import java.util.*
 internal class LoxClass(val name: String, private val methods: Map<String, LoxFunction>) : LoxCallable {
 
     override fun arity(): Int {
-        return 0;
+        val initializer = findMethod("init")
+        return if (initializer.isPresent) { initializer.get().arity()  }
+        else { 0 }
     }
 
     override fun call(interpreter: Interpreter, arguments: Iterable<Any>): Optional<Any> {
-        return Optional.of(LoxInstance(this));
+
+        val instance = LoxInstance(this)
+
+        val initializer = findMethod("init")
+        if (initializer.isPresent) {
+            initializer.get().bind(instance).call(interpreter, arguments)
+        }
+
+        return Optional.of(instance)
     }
 
     fun findMethod(name: String): Optional<LoxFunction> {
-        return Optional.ofNullable(methods.get(name))
+        return Optional.ofNullable(methods[name])
     }
 
     override fun toString(): String {
