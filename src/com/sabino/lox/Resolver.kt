@@ -1,5 +1,6 @@
 package com.sabino.lox
 
+import com.sabino.lox.types.*
 import com.sabino.lox.types.Expr
 import com.sabino.lox.types.FunctionType
 import com.sabino.lox.types.Stmt
@@ -19,6 +20,7 @@ internal class Resolver(
     // value: is finished being initialized?
     private val scopes: Stack<MutableMap<String, Boolean>> = Stack()
     private var currentFunctionType = FunctionType.NONE
+    private var currentClassType = ClassType.NONE
 
     override fun visitAssignExpr(expr: Expr.Assign): Optional<Any> {
         resolve(expr.value)
@@ -65,7 +67,12 @@ internal class Resolver(
     }
 
     override fun visitThisExpr(expr: Expr.This): Optional<Any> {
-        resolveLocal(expr, expr.keyword)
+
+        if (currentClassType == ClassType.NONE) {
+            Lox.error(expr.keyword, "Cannot use 'this' outside of a class.")
+        } else {
+            resolveLocal(expr, expr.keyword)
+        }
         return Optional.empty()
     }
 
@@ -75,7 +82,7 @@ internal class Resolver(
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
-        if (!scopes.empty() && scopes.peek().get(expr.name.lexeme) == false) {
+        if (!scopes.empty() && scopes.peek()[expr.name.lexeme] == false) {
             Lox.error(expr.name,
                 "Cannot read local variable in its own initializer.")
         }
@@ -90,6 +97,10 @@ internal class Resolver(
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
+
+        val enclosingClasstype = currentClassType
+        currentClassType = ClassType.CLASS
+
         declare(stmt.name)
         define(stmt.name)
 
@@ -99,6 +110,7 @@ internal class Resolver(
         stmt.methods.forEach { resolveFunction(it, FunctionType.METHOD) }
 
         endScope()
+        currentClassType = enclosingClasstype
     }
 
     override fun visitExpressionStmt(stmt: Stmt.Expression) {
