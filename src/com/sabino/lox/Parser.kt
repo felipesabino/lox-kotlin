@@ -3,16 +3,16 @@ package com.sabino.lox
 import com.sabino.lox.types.Expr
 import com.sabino.lox.types.Expr.Literal
 import com.sabino.lox.types.Stmt
-import com.sabino.lox.types.TokenType.*
 import com.sabino.lox.types.Token
 import com.sabino.lox.types.TokenType
+import com.sabino.lox.types.TokenType.*
 import java.util.*
 
 
 internal class Parser(private val tokens: List<Token>) {
 
-    internal class ParserError: RuntimeException {
-        constructor(): super()
+    internal class ParserError : RuntimeException {
+        constructor() : super()
     }
 
     /*
@@ -89,17 +89,19 @@ internal class Parser(private val tokens: List<Token>) {
     }.asIterable()
 
     private fun declaration(): Optional<Stmt> {
-        return Optional.ofNullable(try {
-            when {
-                match(CLASS) -> classDeclaration()
-                match(FUN) -> function("function")
-                match(VAR) -> varDeclaration()
-                else -> statement()
+        return Optional.ofNullable(
+            try {
+                when {
+                    match(CLASS) -> classDeclaration()
+                    match(FUN) -> function("function")
+                    match(VAR) -> varDeclaration()
+                    else -> statement()
+                }
+            } catch (e: ParserError) {
+                synchronize()
+                null
             }
-        } catch (e: ParserError) {
-            synchronize()
-            null
-        })
+        )
     }
 
     private fun classDeclaration(): Stmt {
@@ -114,7 +116,7 @@ internal class Parser(private val tokens: List<Token>) {
         consume(LEFT_BRACE, "Expected '{' before class body'")
 
         val methods: MutableList<Stmt.Function> = mutableListOf()
-        while(!check(RIGHT_BRACE) && isAtEnd().not()) {
+        while (!check(RIGHT_BRACE) && isAtEnd().not()) {
             methods.add(function("method"))
         }
 
@@ -136,13 +138,27 @@ internal class Parser(private val tokens: List<Token>) {
 
     private fun statement(): Stmt {
         return when {
-            match(FOR) -> { forStatement() }
-            match(IF) -> { ifStatement() }
-            match(PRINT) -> { printStatement() }
-            match(RETURN) ->{ returnStatement() }
-            match(WHILE) -> { whileStatement() }
-            match(LEFT_BRACE) -> { Stmt.Block(block()) }
-            else -> { expressionStatement() }
+            match(FOR) -> {
+                forStatement()
+            }
+            match(IF) -> {
+                ifStatement()
+            }
+            match(PRINT) -> {
+                printStatement()
+            }
+            match(RETURN) -> {
+                returnStatement()
+            }
+            match(WHILE) -> {
+                whileStatement()
+            }
+            match(LEFT_BRACE) -> {
+                Stmt.Block(block())
+            }
+            else -> {
+                expressionStatement()
+            }
         }
     }
 
@@ -183,20 +199,26 @@ internal class Parser(private val tokens: List<Token>) {
         var body = statement()
 
         if (increment.isPresent) {
-            body = Stmt.Block(listOf(
-                body,
-                Stmt.Expression(increment.get())
-            ))
+            body = Stmt.Block(
+                listOf(
+                    body,
+                    Stmt.Expression(increment.get())
+                )
+            )
         }
 
-        if (condition.isPresent.not()) { condition = Optional.of(Literal(Optional.of(true))) }
+        if (condition.isPresent.not()) {
+            condition = Optional.of(Literal(Optional.of(true)))
+        }
         body = Stmt.While(condition.get(), body)
 
         if (initializer.isPresent) {
-            body = Stmt.Block(listOf(
-                initializer.get(),
-                body
-            ))
+            body = Stmt.Block(
+                listOf(
+                    initializer.get(),
+                    body
+                )
+            )
         }
 
         return body
@@ -302,7 +324,7 @@ internal class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    private  fun or(): Expr {
+    private fun or(): Expr {
         var expr = and()
 
         while (match(OR)) {
@@ -325,7 +347,7 @@ internal class Parser(private val tokens: List<Token>) {
         return expr
     }
 
-    private  fun equality() : Expr {
+    private fun equality(): Expr {
         var expr: Expr = comparison()
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
@@ -448,7 +470,7 @@ internal class Parser(private val tokens: List<Token>) {
      *
      */
     private fun consume(type: TokenType, message: String): Token {
-        if(check(type)) return advance()
+        if (check(type)) return advance()
 
         throw error(peek(), message)
     }
@@ -502,7 +524,8 @@ internal class Parser(private val tokens: List<Token>) {
             if (previous().type === SEMICOLON) return
             when (peek().type) {
                 CLASS, FUN, VAR, FOR, IF, WHILE, PRINT, RETURN -> return
-                else -> {}
+                else -> {
+                }
             }
             advance()
         }

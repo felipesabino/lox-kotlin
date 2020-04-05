@@ -8,7 +8,7 @@ internal class LoxFunction(
     private val declaration: Stmt.Function,
     private val closure: Environment,
     private val isInitializer: Boolean
-): LoxCallable {
+) : LoxCallable {
 
     override fun arity(): Int {
         return declaration.params.count() // TODO: should use other collection class instead to avoid O(n) here?
@@ -18,8 +18,7 @@ internal class LoxFunction(
         val environment = Environment(closure)
 
         val argumentsList = arguments.toList() // TODO: how to avoid this and loop both iterables synchronously?
-        declaration.params.forEachIndexed {
-                index, item ->
+        declaration.params.forEachIndexed { index, item ->
             @Suppress("UNCHECKED_CAST")
             environment.define(item.lexeme, argumentsList[index] as Optional<Any>)
         }
@@ -34,6 +33,7 @@ internal class LoxFunction(
         if (isInitializer) return closure.getAt(0, "this")
         return Optional.empty()
     }
+
     fun bind(instance: LoxInstance): LoxFunction {
         val environment = Environment(closure)
         environment.define("this", Optional.of(instance))

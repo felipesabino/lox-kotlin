@@ -1,7 +1,7 @@
 package com.sabino.lox.types
 
 import com.sabino.lox.Interpreter
-import java.util.Optional
+import java.util.*
 
 internal interface LoxCallable {
     fun arity(): Int

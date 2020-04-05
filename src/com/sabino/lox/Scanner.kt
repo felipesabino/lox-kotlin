@@ -1,8 +1,8 @@
 package com.sabino.lox
 
-import com.sabino.lox.types.TokenType.*
 import com.sabino.lox.types.Token
 import com.sabino.lox.types.TokenType
+import com.sabino.lox.types.TokenType.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -12,22 +12,24 @@ internal class Scanner(private val source: String) {
     private var current = 0
     private var line = 1
 
-    private val keywords: Map<String, TokenType> = mapOf("and" to AND,
-                                                        "class" to CLASS,
-                                                        "else" to ELSE,
-                                                        "false" to FALSE,
-                                                        "for" to FOR,
-                                                        "fun" to FUN,
-                                                        "if" to IF,
-                                                        "nil" to NIL,
-                                                        "or" to OR,
-                                                        "print" to PRINT,
-                                                        "return" to RETURN,
-                                                        "super" to SUPER,
-                                                        "this" to THIS,
-                                                        "true" to TRUE,
-                                                        "var" to VAR,
-                                                        "while" to WHILE)
+    private val keywords: Map<String, TokenType> = mapOf(
+        "and" to AND,
+        "class" to CLASS,
+        "else" to ELSE,
+        "false" to FALSE,
+        "for" to FOR,
+        "fun" to FUN,
+        "if" to IF,
+        "nil" to NIL,
+        "or" to OR,
+        "print" to PRINT,
+        "return" to RETURN,
+        "super" to SUPER,
+        "this" to THIS,
+        "true" to TRUE,
+        "var" to VAR,
+        "while" to WHILE
+    )
 
     fun scanTokens(): List<Token> {
         while (!isAtEnd()) { // We are at the beginning of the next lexeme.
@@ -54,12 +56,37 @@ internal class Scanner(private val source: String) {
             '+' -> addToken(PLUS)
             ';' -> addToken(SEMICOLON)
             '*' -> addToken(STAR)
-            '!' -> addToken(if (match('=')) { BANG_EQUAL } else { BANG })
-            '=' -> addToken(if (match('=')) { EQUAL_EQUAL } else { EQUAL })
-            '<' -> addToken(if (match('=')) { LESS_EQUAL } else { LESS })
-            '>' -> addToken(if (match('=')) { GREATER_EQUAL } else { GREATER })
+            '!' -> addToken(
+                if (match('=')) {
+                    BANG_EQUAL
+                } else {
+                    BANG
+                }
+            )
+            '=' -> addToken(
+                if (match('=')) {
+                    EQUAL_EQUAL
+                } else {
+                    EQUAL
+                }
+            )
+            '<' -> addToken(
+                if (match('=')) {
+                    LESS_EQUAL
+                } else {
+                    LESS
+                }
+            )
+            '>' -> addToken(
+                if (match('=')) {
+                    GREATER_EQUAL
+                } else {
+                    GREATER
+                }
+            )
             '/' -> slash()
-            ' ', '\r', '\t' -> { }
+            ' ', '\r', '\t' -> {
+            }
             '\n' -> line++
             '"' -> string()
             in '0'..'9' -> number()
@@ -68,7 +95,7 @@ internal class Scanner(private val source: String) {
                 else Lox.error(line, "Unexpected character '$c'.")
             }
         }
-    } 
+    }
 
     private fun advance(): Char {
         current++

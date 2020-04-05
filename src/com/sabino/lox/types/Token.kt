@@ -1,6 +1,6 @@
 package com.sabino.lox.types
 
-import java.util.Optional
+import java.util.*
 
 internal class Token(val type: TokenType, val lexeme: String, val literal: Optional<Any>, val line: Int) {
 

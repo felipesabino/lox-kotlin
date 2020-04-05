@@ -11,8 +11,11 @@ internal class LoxClass(
 
     override fun arity(): Int {
         val initializer = findMethod("init")
-        return if (initializer.isPresent) { initializer.get().arity()  }
-        else { 0 }
+        return if (initializer.isPresent) {
+            initializer.get().arity()
+        } else {
+            0
+        }
     }
 
     override fun call(interpreter: Interpreter, arguments: Iterable<Any>): Optional<Any> {

@@ -7,7 +7,7 @@ import java.util.*
 
 internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
 
-    class RuntimeError(val token: Token, override val message: String): RuntimeException()
+    class RuntimeError(val token: Token, override val message: String) : RuntimeException()
 
     val globals = Environment()
     private var environment = globals
@@ -76,9 +76,9 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
                     (left.get() as Double) * (right.get() as Double)
                 }
                 TokenType.PLUS -> {
-                    if (left.filter { v -> v is Double}.isPresent && right.filter { v -> v is Double}.isPresent) {
+                    if (left.filter { v -> v is Double }.isPresent && right.filter { v -> v is Double }.isPresent) {
                         left.map { v -> v as Double }.get() + right.map { v -> v as Double }.get()
-                    } else if (left.filter { v -> v is String}.isPresent && right.filter { v -> v is String}.isPresent) {
+                    } else if (left.filter { v -> v is String }.isPresent && right.filter { v -> v is String }.isPresent) {
                         StringBuilder()
                             .append(left.map { v -> v as String }.get())
                             .append(right.map { v -> v as String }.get())
@@ -115,10 +115,10 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     override fun visitGetExpr(expr: Expr.Get): Optional<Any> {
         val obj = evaluate(expr.obj)
         if (obj.filter { it is LoxInstance }.isPresent) {
-             val instance = obj.get() as LoxInstance
+            val instance = obj.get() as LoxInstance
             return instance.get(expr.name)
         }
-        throw RuntimeError(expr.name, "Only instances have properties." )
+        throw RuntimeError(expr.name, "Only instances have properties.")
     }
 
     override fun visitGroupingExpr(expr: Expr.Grouping): Optional<Any> {
@@ -144,7 +144,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     override fun visitSetExpr(expr: Expr.Set): Optional<Any> {
         val obj = evaluate(expr.obj)
         if (obj.filter { it is LoxInstance }.isPresent.not()) {
-            throw RuntimeError(expr.name, "Only instances have properties." )
+            throw RuntimeError(expr.name, "Only instances have properties.")
         }
         val value = evaluate(expr.value)
 
@@ -183,7 +183,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         val right = evaluate(expr.right)
 
         return when (expr.operator.type) {
-            TokenType.MINUS -> right.filter{ v -> v is Double }.map { v -> - (v as Double) }
+            TokenType.MINUS -> right.filter { v -> v is Double }.map { v -> -(v as Double) }
             TokenType.BANG -> Optional.of(isTruthy(right).not())
             else -> Optional.empty()
         }
@@ -210,7 +210,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
                 throw RuntimeError(stmt.superclass.get().name, "Superclass must be a class.")
             }
         }
-        
+
         environment.define(stmt.name.lexeme, Optional.empty())
 
         if (stmt.superclass.isPresent) {
@@ -219,7 +219,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         }
 
         val methods: Map<String, LoxFunction> = stmt.methods
-            .associateBy( { it.name.lexeme }, { it })
+            .associateBy({ it.name.lexeme }, { it })
             .mapValues { LoxFunction(it.value, environment, it.value.name.lexeme == "init") }
 
         val klass = LoxClass(stmt.name.lexeme, superclass.map { it as LoxClass }, methods)
@@ -243,7 +243,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     override fun visitIfStmt(stmt: Stmt.If) {
         if (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.thenBranch)
-        } else if (stmt.elseBranch.isPresent){
+        } else if (stmt.elseBranch.isPresent) {
             execute(stmt.elseBranch.get())
         }
     }
@@ -268,7 +268,7 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitWhileStmt(stmt: Stmt.While) {
-        while(isTruthy(evaluate(stmt.condition))) {
+        while (isTruthy(evaluate(stmt.condition))) {
             execute(stmt.body)
         }
     }
@@ -278,14 +278,22 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     private fun isTruthy(value: Optional<Any>): Boolean {
-        if (value.isPresent.not()) { return false }
-        if (value.get() is Boolean) { return value.get() as Boolean }
+        if (value.isPresent.not()) {
+            return false
+        }
+        if (value.get() is Boolean) {
+            return value.get() as Boolean
+        }
         return true
     }
 
     private fun isEqual(left: Optional<Any>, right: Optional<Any>): Boolean {
-        if (left.isPresent.not() && right.isPresent.not()) { return true }
-        if (left.isPresent.not()) { return false }
+        if (left.isPresent.not() && right.isPresent.not()) {
+            return true
+        }
+        if (left.isPresent.not()) {
+            return false
+        }
         return left == right
     }
 

@@ -1,10 +1,6 @@
 package com.sabino.lox
 
 import com.sabino.lox.types.*
-import com.sabino.lox.types.Expr
-import com.sabino.lox.types.FunctionType
-import com.sabino.lox.types.Stmt
-import com.sabino.lox.types.Token
 import java.util.*
 
 
@@ -95,8 +91,10 @@ internal class Resolver(
 
     override fun visitVariableExpr(expr: Expr.Variable): Optional<Any> {
         if (!scopes.empty() && scopes.peek()[expr.name.lexeme] == false) {
-            Lox.error(expr.name,
-                "Cannot read local variable in its own initializer.")
+            Lox.error(
+                expr.name,
+                "Cannot read local variable in its own initializer."
+            )
         }
         resolveLocal(expr, expr.name)
         return Optional.empty()
@@ -117,7 +115,8 @@ internal class Resolver(
         define(stmt.name)
 
         if (stmt.superclass.isPresent &&
-                stmt.name.lexeme == stmt.superclass.get().name.lexeme) {
+            stmt.name.lexeme == stmt.superclass.get().name.lexeme
+        ) {
             Lox.error(stmt.superclass.get().name, "A class cannot inherit from itself.")
         }
 
@@ -185,7 +184,7 @@ internal class Resolver(
 
     override fun visitVarStmt(stmt: Stmt.Var) {
         declare(stmt.name)
-        if(stmt.initializer.isPresent) {
+        if (stmt.initializer.isPresent) {
             resolve(stmt.initializer.get())
         }
         define(stmt.name)

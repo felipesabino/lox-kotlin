@@ -19,7 +19,8 @@ class Lox {
 
         private val interpreter = Interpreter()
 
-        @JvmStatic fun main(args: Array<String>) {
+        @JvmStatic
+        fun main(args: Array<String>) {
             when (args.size) {
                 1 -> runFile(args[0])
                 0 -> runPrompt()
@@ -62,13 +63,17 @@ class Lox {
             val statements = parser.parse().toList()
 
             // stop in case of a syntax error
-            if (hadError ) { return }
+            if (hadError) {
+                return
+            }
 
             val resolver = Resolver(interpreter)
             resolver.resolve(statements)
 
             // stop in case of a resolution syntax error
-            if (hadError ) { return }
+            if (hadError) {
+                return
+            }
 
             interpreter.interpret(statements)
         }
@@ -78,7 +83,7 @@ class Lox {
         }
 
         internal fun error(token: Token, message: String) {
-            if(token.type == TokenType.EOF) {
+            if (token.type == TokenType.EOF) {
                 report(token.line, " at end ", message)
             } else {
                 report(token.line, " at '${token.lexeme}'", message)
