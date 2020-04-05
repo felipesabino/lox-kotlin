@@ -22,7 +22,7 @@ internal abstract class Stmt {
         }
     }
 
-    internal class Class(val name: Token, val methods: Iterable<Stmt.Function>) : Stmt() {
+    internal class Class(val name: Token, val superclass: Optional<Expr.Variable>, val methods: Iterable<Stmt.Function>) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitClassStmt(this)
         }

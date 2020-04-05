@@ -177,13 +177,22 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
     }
 
     override fun visitClassStmt(stmt: Stmt.Class) {
+
+        var superclass: Optional<Any> = Optional.empty()
+        if (stmt.superclass.isPresent) {
+            superclass = evaluate(stmt.superclass.get())
+            if (superclass.filter { it is LoxClass }.isPresent.not()) {
+                throw RuntimeError(stmt.superclass.get().name, "Superclass must be a class.")
+            }
+        }
+        
         environment.define(stmt.name.lexeme, Optional.empty())
 
         val methods: Map<String, LoxFunction> = stmt.methods
             .associateBy( { it.name.lexeme }, { it })
             .mapValues { LoxFunction(it.value, environment, it.value.name.lexeme == "init") }
 
-        val klass = LoxClass(stmt.name.lexeme, methods)
+        val klass = LoxClass(stmt.name.lexeme, superclass.map { it as LoxClass }, methods)
         environment.assign(stmt.name, Optional.of(klass))
     }
 

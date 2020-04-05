@@ -33,7 +33,7 @@ class GenerateAst {
 
             defineAst(outputDir, "Stmt", listOf(
                 "Block      : Iterable<Stmt> statements",
-                "Class      : Token name, Iterable<Stmt.Function> methods",
+                "Class      : Token name, Optional<Expr.Variable> superclass, Iterable<Stmt.Function> methods",
                 "Expression : Expr expression",
                 "Function   : Token name, Iterable<Token> params, Iterable<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Optional<Stmt> elseBranch",

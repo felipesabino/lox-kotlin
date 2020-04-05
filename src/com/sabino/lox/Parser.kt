@@ -24,7 +24,7 @@ internal class Parser(private val tokens: List<Token>) {
                         | varDecl
                         | statement ;
 
-        classDecl       → "class" IDENTIFIER "{" function* "}" ;
+        classDecl       → "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
         funDecl         → "fun" function ;
         function        → IDENTIFIER "(" parameters? ")" block ;
         parameters      → IDENTIFIER ( "," IDENTIFIER )* ;
@@ -104,6 +104,13 @@ internal class Parser(private val tokens: List<Token>) {
 
     private fun classDeclaration(): Stmt {
         val name = consume(IDENTIFIER, "Expected class name")
+
+        var superclass: Optional<Expr.Variable> = Optional.empty()
+        if (match(LESS)) {
+            consume(IDENTIFIER, "Expected superclass name")
+            superclass = Optional.of(Expr.Variable(previous()))
+        }
+
         consume(LEFT_BRACE, "Expected '{' before class body'")
 
         val methods: MutableList<Stmt.Function> = mutableListOf()
@@ -112,7 +119,7 @@ internal class Parser(private val tokens: List<Token>) {
         }
 
         consume(RIGHT_BRACE, "Expected '}' after class body")
-        return Stmt.Class(name, methods)
+        return Stmt.Class(name, superclass, methods)
     }
 
     private fun varDeclaration(): Stmt {

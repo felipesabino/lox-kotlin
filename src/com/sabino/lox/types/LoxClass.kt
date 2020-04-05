@@ -3,7 +3,11 @@ package com.sabino.lox.types
 import com.sabino.lox.Interpreter
 import java.util.*
 
-internal class LoxClass(val name: String, private val methods: Map<String, LoxFunction>) : LoxCallable {
+internal class LoxClass(
+    val name: String,
+    val superclass: Optional<LoxClass>,
+    private val methods: Map<String, LoxFunction>
+) : LoxCallable {
 
     override fun arity(): Int {
         val initializer = findMethod("init")
