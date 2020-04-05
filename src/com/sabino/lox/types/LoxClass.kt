@@ -28,7 +28,16 @@ internal class LoxClass(
     }
 
     fun findMethod(name: String): Optional<LoxFunction> {
-        return Optional.ofNullable(methods[name])
+
+        if (methods.containsKey(name)) {
+            return Optional.ofNullable(methods[name])
+        }
+
+        if (superclass.isPresent) {
+            return superclass.get().findMethod(name)
+        }
+
+        return Optional.empty()
     }
 
     override fun toString(): String {

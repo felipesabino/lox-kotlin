@@ -104,12 +104,12 @@ internal class Resolver(
         declare(stmt.name)
         define(stmt.name)
 
-        if (stmt.superclass.isPresent.not() &&
+        if (stmt.superclass.isPresent &&
                 stmt.name.lexeme == stmt.superclass.get().name.lexeme) {
             Lox.error(stmt.superclass.get().name, "A class cannot inherit from itself.")
         }
 
-        if (stmt.superclass.isPresent.not()) {
+        if (stmt.superclass.isPresent) {
             resolve(stmt.superclass.get())
         }
 
