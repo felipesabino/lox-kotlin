@@ -66,6 +66,11 @@ internal class Resolver(
         return Optional.empty()
     }
 
+    override fun visitSuperExpr(expr: Expr.Super): Optional<Any> {
+        resolveLocal(expr, expr.keyword)
+        return Optional.empty()
+    }
+
     override fun visitThisExpr(expr: Expr.This): Optional<Any> {
 
         if (currentClassType == ClassType.NONE) {
@@ -111,6 +116,9 @@ internal class Resolver(
 
         if (stmt.superclass.isPresent) {
             resolve(stmt.superclass.get())
+
+            beginScope()
+            scopes.peek().put("super", true)
         }
 
         beginScope()
@@ -123,6 +131,10 @@ internal class Resolver(
         }
 
         endScope()
+        if (stmt.superclass.isPresent) {
+            endScope()
+        }
+
         currentClassType = enclosingClasstype
     }
 

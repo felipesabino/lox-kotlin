@@ -154,6 +154,31 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         return value
     }
 
+    override fun visitSuperExpr(expr: Expr.Super): Optional<Any> {
+        val distance = Optional.ofNullable(locals.get(expr))
+
+        if (distance.isPresent) {
+            val superclass = environment.getAt(distance.get(), "super")
+
+            // "this" is always one level nearer than "super"'s environment.
+            val instance = environment.getAt(distance.get() - 1, "this")
+
+            val method = superclass.map { it as LoxClass }.get().findMethod(expr.method.lexeme)
+
+            if (instance.filter { it is LoxInstance }.isPresent.not()) {
+                throw RuntimeError(expr.keyword, "Could not map class inheritance scope.")
+            }
+
+            if (method.isPresent) {
+                return Optional.of(method.get().bind(instance.map { it as LoxInstance }.get()))
+            } else {
+                throw RuntimeError(expr.keyword, "Undefined property ${expr.method.lexeme}'")
+            }
+        }
+
+        return Optional.empty()
+    }
+
     override fun visitUnaryExpr(expr: Expr.Unary): Optional<Any> {
         val right = evaluate(expr.right)
 
@@ -188,11 +213,21 @@ internal class Interpreter : Expr.Visitor<Optional<Any>>, Stmt.Visitor<Unit> {
         
         environment.define(stmt.name.lexeme, Optional.empty())
 
+        if (stmt.superclass.isPresent) {
+            environment = Environment(environment)
+            environment.define("super", superclass)
+        }
+
         val methods: Map<String, LoxFunction> = stmt.methods
             .associateBy( { it.name.lexeme }, { it })
             .mapValues { LoxFunction(it.value, environment, it.value.name.lexeme == "init") }
 
         val klass = LoxClass(stmt.name.lexeme, superclass.map { it as LoxClass }, methods)
+
+        if (stmt.superclass.isPresent) {
+            environment = environment.enclosing.get()
+        }
+
         environment.assign(stmt.name, Optional.of(klass))
     }
 

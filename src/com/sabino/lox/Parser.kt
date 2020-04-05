@@ -66,9 +66,9 @@ internal class Parser(private val tokens: List<Token>) {
         arguments       → expression ( "," expression )* ;
 
         primary         → "false" | "true" | "nil"
-                        | NUMBER | STRING |
+                        | NUMBER | STRING | IDENTIFIER
                         | "(" expression ")"
-                        | IDENTIFIER;
+                        | "super" "." IDENTIFIER;
     */
 
     /*
@@ -412,6 +412,13 @@ internal class Parser(private val tokens: List<Token>) {
 
         if (match(NUMBER, STRING)) {
             return Literal(previous().literal)
+        }
+
+        if (match(SUPER)) {
+            val keyword = previous()
+            consume(DOT, "Expect '.' after super.")
+            val method = consume(IDENTIFIER, "Expect superclass method name.")
+            return Expr.Super(keyword, method)
         }
 
         if (match(THIS)) {
