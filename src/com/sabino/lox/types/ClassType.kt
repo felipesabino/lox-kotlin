@@ -2,5 +2,6 @@ package com.sabino.lox.types
 
 enum class ClassType {
     NONE,
-    CLASS
+    CLASS,
+    SUBCLASS
 }

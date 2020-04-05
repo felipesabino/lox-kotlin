@@ -67,6 +67,13 @@ internal class Resolver(
     }
 
     override fun visitSuperExpr(expr: Expr.Super): Optional<Any> {
+
+        if (currentClassType == ClassType.NONE) {
+            Lox.error(expr.keyword, "Cannot use 'super' oustide of a class")
+        } else if (currentClassType != ClassType.SUBCLASS) {
+            Lox.error(expr.keyword, "Cannot use 'super' in a class with no superclass")
+        }
+
         resolveLocal(expr, expr.keyword)
         return Optional.empty()
     }
@@ -115,6 +122,7 @@ internal class Resolver(
         }
 
         if (stmt.superclass.isPresent) {
+            currentClassType = ClassType.SUBCLASS
             resolve(stmt.superclass.get())
 
             beginScope()
